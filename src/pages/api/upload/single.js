@@ -1,7 +1,6 @@
 import { s3Client } from "@/lib/s3-client";
-import { NextResponse } from "next/server";
+import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "uuid";
-import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 // Generate unique filename
 export function generateFileName(originalName) {
@@ -73,14 +72,41 @@ export async function deleteFromS3(filePath) {
 //   getFilePath,
 // } from "@/lib/upload-helpers";
 
-export async function POST(request) {
+import multer from "multer";
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+function runMiddleware(req, res, fn) {
+  return new Promise((resolve, reject) => {
+    fn(req, res, (result) => {
+      if (result instanceof Error) {
+        return reject(result);
+      }
+      return resolve(result);
+    });
+  });
+}
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
   try {
-    const formData = await request.formData();
-    const file = formData.get("file");
-    const uploadType = formData.get("type") || "uploads"; // galeri, pengumuman, etc
+    await runMiddleware(req, res, upload.single("file"));
+
+    const file = req.file;
+    const { type: uploadType = "uploads" } = req.body;
 
     if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+      return res.status(400).json({ error: "No file provided" });
     }
 
     // Validasi file type dan size
@@ -93,62 +119,49 @@ export async function POST(request) {
     ];
     const maxSize = 10 * 1024 * 1024; // 10MB
 
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json(
-        {
-          error:
-            "File type not allowed. Only JPEG, PNG, WebP, and PDF files are accepted.",
-        },
-        { status: 400 }
-      );
+    if (!allowedTypes.includes(file.mimetype)) {
+      return res.status(400).json({
+        error:
+          "File type not allowed. Only JPEG, PNG, WebP, and PDF files are accepted.",
+      });
     }
 
     if (file.size > maxSize) {
-      return NextResponse.json(
-        {
-          error: "File too large. Maximum size is 10MB.",
-        },
-        { status: 400 }
-      );
+      return res.status(400).json({
+        error: "File too large. Maximum size is 10MB.",
+      });
     }
 
     // Generate filename dan path
-    const fileName = generateFileName(file.name);
+    const fileName = generateFileName(file.originalname);
     const filePath = getFilePath(uploadType, fileName);
-
-    // Convert file to buffer
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
 
     // Upload ke S3
     const publicUrl = await uploadToS3(
       {
-        buffer,
-        mimetype: file.type,
-        originalname: file.name,
+        buffer: file.buffer,
+        mimetype: file.mimetype,
+        originalname: file.originalname,
       },
       filePath
     );
 
-    return NextResponse.json({
+    return res.status(200).json({
       success: true,
       data: {
         url: publicUrl,
         fileName: fileName,
-        originalName: file.name,
+        originalName: file.originalname,
         size: file.size,
-        type: file.type,
+        type: file.mimetype,
         path: filePath,
       },
     });
   } catch (error) {
     console.error("Upload error:", error);
-    return NextResponse.json(
-      {
-        error: "Upload failed",
-        details: error.message,
-      },
-      { status: 500 }
-    );
+    return res.status(500).json({
+      error: "Upload failed",
+      details: error.message,
+    });
   }
 }

@@ -1,40 +1,38 @@
+import { apiResponse } from "@/lib/apiHelper";
+import { getTokenFromHeader, verifyToken } from "@/lib/jwt";
 import { ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
-import { getServerSession } from "next-auth";
-import { NextResponse } from "next/server";
-
-import { authOptions } from "@/lib/auth";
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION || "us-east-1",
+  endpoint: process.env.S3_ENDPOINT,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
+  forcePathStyle: true,
 });
 
-export async function GET(request) {
-  try {
-    // Check if user is authenticated and has admin role
-    const session = await getServerSession(authOptions);
+export default async function handler(req, res) {
+  if (req.method !== "GET") {
+    return res.status(405).json(apiResponse(false, null, "Method not allowed"));
+  }
 
-    if (!session || session.user.role !== "admin") {
-      return NextResponse.json(
-        { error: "Unauthorized access" },
-        { status: 401 }
-      );
+  try {
+    const token = getTokenFromHeader(req.headers.authorization);
+    if (!token) {
+      return res.status(401).json(apiResponse(false, null, "No token provided"));
     }
 
-    const { searchParams } = new URL(request.url);
-    const prefix = searchParams.get("prefix") || "";
-    const search = searchParams.get("search") || "";
+    const decoded = await verifyToken(token);
+    if (!decoded || decoded.role !== "ADMIN") {
+      return res.status(401).json(apiResponse(false, null, "Unauthorized access"));
+    }
 
+    const { prefix = "", search = "" } = req.query;
     const bucketName = process.env.AWS_S3_BUCKET_NAME;
 
     if (!bucketName) {
-      return NextResponse.json(
-        { error: "S3 bucket not configured" },
-        { status: 500 }
-      );
+      return res.status(500).json(apiResponse(false, null, "S3 bucket not configured"));
     }
 
     const command = new ListObjectsV2Command({
@@ -45,42 +43,36 @@ export async function GET(request) {
 
     const response = await s3Client.send(command);
 
-    // Filter objects by search query if provided
     let objects = response.Contents || [];
-    let folders =
-      response.CommonPrefixes?.map((prefix) =>
-        prefix.Prefix.replace(/\/$/, "").split("/").pop()
-      ) || [];
+    let folders = response.CommonPrefixes?.map((prefix) =>
+      prefix.Prefix.replace(/\/$/, "").split("/").pop()
+    ) || [];
 
     if (search) {
+      const searchLower = search.toLowerCase();
       objects = objects.filter((obj) =>
-        obj.Key.toLowerCase().includes(search.toLowerCase())
+        obj.Key.toLowerCase().includes(searchLower)
       );
       folders = folders.filter((folder) =>
-        folder.toLowerCase().includes(search.toLowerCase())
+        folder.toLowerCase().includes(searchLower)
       );
     }
 
-    // Transform objects to include additional info
     const transformedObjects = objects.map((obj) => ({
       key: obj.Key,
       size: obj.Size,
       lastModified: obj.LastModified,
-      url: `https://${bucketName}.s3.${process.env.AWS_REGION || "us-east-1"}.amazonaws.com/${obj.Key}`,
+      url: `https://${bucketName}.s3.${process.env.AWS_REGION || "us-east-1"}.amazonaws.com/${obj.Key}`, // Or construct using endpoint if needed
     }));
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        objects: transformedObjects,
-        folders: folders,
-        currentPath: prefix,
-      },
-    });
+    return res.status(200).json(apiResponse(true, {
+      objects: transformedObjects,
+      folders: folders,
+      currentPath: prefix,
+    }, "Objects listed successfully"));
+
   } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to list S3 objects" },
-      { status: 500 }
-    );
+    console.error("List objects error:", error);
+    return res.status(500).json(apiResponse(false, null, "Failed to list S3 objects", error.message));
   }
 }

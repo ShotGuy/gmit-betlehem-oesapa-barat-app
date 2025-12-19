@@ -1,7 +1,6 @@
 import { s3Client } from "@/lib/s3-client";
-import { NextResponse } from "next/server";
+import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "uuid";
-import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 // Generate unique filename
 export function generateFileName(originalName) {
@@ -65,14 +64,43 @@ export async function deleteFromS3(filePath) {
 }
 
 // ===== 6. API ROUTE - /api/upload/multiple.js =====
-export async function POST(request) {
+// ===== 6. API ROUTE - /api/upload/multiple.js =====
+import multer from "multer";
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+function runMiddleware(req, res, fn) {
+  return new Promise((resolve, reject) => {
+    fn(req, res, (result) => {
+      if (result instanceof Error) {
+        return reject(result);
+      }
+      return resolve(result);
+    });
+  });
+}
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
   try {
-    const formData = await request.formData();
-    const files = formData.getAll("files");
-    const uploadType = formData.get("type") || "uploads";
+    // Handle multiple files under the key 'files'
+    await runMiddleware(req, res, upload.array("files"));
+
+    const files = req.files;
+    const { type: uploadType = "uploads" } = req.body;
 
     if (!files || files.length === 0) {
-      return NextResponse.json({ error: "No files provided" }, { status: 400 });
+      return res.status(400).json({ error: "No files provided" });
     }
 
     const uploadPromises = files.map(async (file, index) => {
@@ -86,25 +114,22 @@ export async function POST(request) {
         ];
         const maxSize = 5 * 1024 * 1024; // 5MB untuk multiple upload
 
-        if (!allowedTypes.includes(file.type)) {
-          throw new Error(`File ${file.name}: type not allowed`);
+        if (!allowedTypes.includes(file.mimetype)) {
+          throw new Error(`File ${file.originalname}: type not allowed`);
         }
 
         if (file.size > maxSize) {
-          throw new Error(`File ${file.name}: too large`);
+          throw new Error(`File ${file.originalname}: too large`);
         }
 
-        const fileName = generateFileName(file.name);
+        const fileName = generateFileName(file.originalname);
         const filePath = getFilePath(uploadType, fileName);
-
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
 
         const publicUrl = await uploadToS3(
           {
-            buffer,
-            mimetype: file.type,
-            originalname: file.name,
+            buffer: file.buffer,
+            mimetype: file.mimetype,
+            originalname: file.originalname,
           },
           filePath
         );
@@ -113,9 +138,9 @@ export async function POST(request) {
           success: true,
           url: publicUrl,
           fileName: fileName,
-          originalName: file.name,
+          originalName: file.originalname,
           size: file.size,
-          type: file.type,
+          type: file.mimetype,
           path: filePath,
           index: index,
         };
@@ -123,7 +148,7 @@ export async function POST(request) {
         return {
           success: false,
           error: error.message,
-          fileName: file.name,
+          fileName: file.originalname,
           index: index,
         };
       }
@@ -133,7 +158,7 @@ export async function POST(request) {
     const successful = results.filter((r) => r.success);
     const failed = results.filter((r) => !r.success);
 
-    return NextResponse.json({
+    return res.status(200).json({
       success: failed.length === 0,
       data: {
         uploaded: successful,
@@ -142,15 +167,13 @@ export async function POST(request) {
         successCount: successful.length,
         failedCount: failed.length,
       },
+      message: failed.length === 0 ? "All files uploaded" : "Some files failed to upload"
     });
   } catch (error) {
     console.error("Multiple upload error:", error);
-    return NextResponse.json(
-      {
-        error: "Upload failed",
-        details: error.message,
-      },
-      { status: 500 }
-    );
+    return res.status(500).json({
+      error: "Upload failed",
+      details: error.message,
+    });
   }
 }

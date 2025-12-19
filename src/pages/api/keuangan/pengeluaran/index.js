@@ -1,15 +1,24 @@
-// ===== 1. API ROUTE - /api/keuangan/pengeluaran/route.js =====
-import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 
-const prisma = new PrismaClient();
+const apiResponse = (success, data = null, message = "", errors = null) => {
+  return {
+    success,
+    data,
+    message,
+    errors,
+    timestamp: new Date().toISOString(),
+  };
+};
 
-// GET - Ambil struktur pengeluaran
-export async function GET(request) {
+export default async function handler(req, res) {
+  if (req.method !== "GET") {
+    res.setHeader("Allow", ["GET"]);
+    return res.status(405).json(apiResponse(false, null, "Method not allowed"));
+  }
+
   try {
-    const { searchParams } = new URL(request.url);
-    const periodeId = searchParams.get("periodeId");
-    const includeAnggaran = searchParams.get("anggaran") === "true";
+    const { periodeId, anggaran } = req.query;
+    const includeAnggaran = anggaran === "true";
 
     // Ambil kategori pengeluaran
     const kategoriPengeluaran = await prisma.kategoriKeuangan.findFirst({
@@ -17,12 +26,7 @@ export async function GET(request) {
     });
 
     if (!kategoriPengeluaran) {
-      return NextResponse.json(
-        {
-          error: "Kategori pengeluaran belum di-setup",
-        },
-        { status: 404 }
-      );
+      return res.status(404).json(apiResponse(false, null, "Kategori pengeluaran belum di-setup"));
     }
 
     // Ambil semua item pengeluaran
@@ -34,10 +38,10 @@ export async function GET(request) {
       include: {
         ...(includeAnggaran &&
           periodeId && {
-            AnggaranItem: {
-              where: { periodeId },
-            },
-          }),
+          AnggaranItem: {
+            where: { periodeId },
+          },
+        }),
       },
       orderBy: [{ level: "asc" }, { urutan: "asc" }],
     });
@@ -45,30 +49,21 @@ export async function GET(request) {
     // Build tree structure
     const tree = buildItemTree(items);
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        kategori: kategoriPengeluaran,
-        items: items,
-        tree: tree,
-        summary: {
-          totalItems: items.length,
-          totalTargetAnggaran: items.reduce(
-            (sum, item) => sum + Number(item.totalTarget || 0),
-            0
-          ),
-        },
+    return res.status(200).json(apiResponse(true, {
+      kategori: kategoriPengeluaran,
+      items: items,
+      tree: tree,
+      summary: {
+        totalItems: items.length,
+        totalTargetAnggaran: items.reduce(
+          (sum, item) => sum + Number(item.totalTarget || 0),
+          0
+        ),
       },
-    });
+    }, "Data pengeluaran berhasil diambil"));
   } catch (error) {
     console.error("Error fetching pengeluaran:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to fetch pengeluaran",
-        details: error.message,
-      },
-      { status: 500 }
-    );
+    return res.status(500).json(apiResponse(false, null, "Failed to fetch pengeluaran", error.message));
   }
 }
 

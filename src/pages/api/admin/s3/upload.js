@@ -1,70 +1,88 @@
+import { apiResponse } from "@/lib/apiHelper";
+import { getTokenFromHeader, verifyToken } from "@/lib/jwt";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { getServerSession } from "next-auth";
-import { NextResponse } from "next/server";
+import multer from "multer";
 
-import { authOptions } from "@/lib/auth";
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION || "us-east-1",
+  endpoint: process.env.S3_ENDPOINT,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
+  forcePathStyle: true,
 });
 
-export async function POST(request) {
-  try {
-    // Check if user is authenticated and has admin role
-    const session = await getServerSession(authOptions);
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
-    if (!session || session.user.role !== "admin") {
-      return NextResponse.json(
-        { error: "Unauthorized access" },
-        { status: 401 }
-      );
+function runMiddleware(req, res, fn) {
+  return new Promise((resolve, reject) => {
+    fn(req, res, (result) => {
+      if (result instanceof Error) {
+        return reject(result);
+      }
+      return resolve(result);
+    });
+  });
+}
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json(apiResponse(false, null, "Method not allowed"));
+  }
+
+  try {
+    const token = getTokenFromHeader(req.headers.authorization);
+    if (!token) {
+      return res.status(401).json(apiResponse(false, null, "No token provided"));
     }
 
-    const formData = await request.formData();
-    const file = formData.get("file");
-    const prefix = formData.get("prefix") || "";
-
-    if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    const decoded = await verifyToken(token);
+    if (!decoded || decoded.role !== "ADMIN") {
+      return res.status(401).json(apiResponse(false, null, "Unauthorized access"));
     }
 
     const bucketName = process.env.AWS_S3_BUCKET_NAME;
-
     if (!bucketName) {
-      return NextResponse.json(
-        { error: "S3 bucket not configured" },
-        { status: 500 }
-      );
+      return res.status(500).json(apiResponse(false, null, "S3 bucket not configured"));
     }
 
-    const fileName = file.name;
-    const fileKey = prefix ? `${prefix}/${fileName}` : fileName;
+    // Use multer to parse the multipart/form-data
+    await runMiddleware(req, res, upload.single("file"));
 
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const file = req.file;
+    const { prefix } = req.body;
+
+    if (!file) {
+      return res.status(400).json(apiResponse(false, null, "No file provided"));
+    }
+
+    const fileName = file.originalname;
+    const fileKey = prefix ? `${prefix}/${fileName}` : fileName;
 
     const command = new PutObjectCommand({
       Bucket: bucketName,
       Key: fileKey,
-      Body: buffer,
-      ContentType: file.type || "application/octet-stream",
+      Body: file.buffer,
+      ContentType: file.mimetype || "application/octet-stream",
     });
 
     await s3Client.send(command);
 
-    return NextResponse.json({
-      success: true,
+    return res.status(200).json(apiResponse(true, {
       message: "File uploaded successfully",
       key: fileKey,
-    });
+    }, "File uploaded successfully"));
+
   } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to upload file" },
-      { status: 500 }
-    );
+    console.error("Upload error:", error);
+    return res.status(500).json(apiResponse(false, null, "Failed to upload file", error.message));
   }
 }
