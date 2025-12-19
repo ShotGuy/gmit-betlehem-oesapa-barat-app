@@ -1,19 +1,29 @@
-import { getServerSession } from "next-auth";
-import { NextResponse } from "next/server";
-
-import { authOptions } from "@/lib/auth";
+import { getTokenFromHeader, verifyToken } from "@/lib/jwt";
 import prisma from "@/lib/prisma";
 
-export async function GET() {
+export default async function handler(req, res) {
+  if (req.method !== "GET") {
+    return res.status(405).json({ message: "Method not allowed" });
+  }
+
   try {
     // Check if user is authenticated and has admin role
-    const session = await getServerSession(authOptions);
+    const token = getTokenFromHeader(req.headers.authorization);
 
-    if (!session || session.user.role !== "admin") {
-      return NextResponse.json(
-        { error: "Unauthorized access" },
-        { status: 401 }
-      );
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "No token provided",
+      });
+    }
+
+    const decoded = await verifyToken(token);
+
+    if (!decoded || decoded.role !== "ADMIN") {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized access",
+      });
     }
 
     // Get database connection info
@@ -35,15 +45,17 @@ export async function GET() {
       info: dbInfo,
     };
 
-    return NextResponse.json({
+    return res.status(200).json({
       success: true,
       data: databaseInfo,
     });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to get database information" },
-      { status: 500 }
-    );
+    console.error("Database info error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to get database information",
+      error: error.message,
+    });
   }
 }
 
