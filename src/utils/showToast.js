@@ -25,3 +25,9 @@ export function showToast({
     duration: timeout,
   });
 }
+
+// Attach static helper methods for cleaner usage
+showToast.success = (message, options = {}) => showToast({ title: "Sukses", description: message, color: "success", ...options });
+showToast.error = (message, options = {}) => showToast({ title: "Error", description: message, color: "error", ...options });
+showToast.warning = (message, options = {}) => showToast({ title: "Peringatan", description: message, color: "warning", ...options });
+showToast.info = (message, options = {}) => showToast({ title: "Info", description: message, color: "info", ...options });

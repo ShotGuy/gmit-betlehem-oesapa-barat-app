@@ -299,8 +299,8 @@ export default function OnboardingPage() {
   return (
     <>
       <PageTitle
-        description="Lengkapi profil jemaat GMIT Imanuel Oepura"
-        title="Lengkapi Profil - GMIT Imanuel Oepura"
+        description="Lengkapi profil jemaat GMIT Betlehem Oesapa Barat"
+        title="Lengkapi Profil - GMIT Betlehem Oesapa Barat"
       />
 
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
@@ -311,7 +311,7 @@ export default function OnboardingPage() {
               <Shield className="h-12 w-12 text-blue-600 mr-3" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  GMIT Imanuel Oepura
+                  GMIT Betlehem Oesapa Barat
                 </h1>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Lengkapi Profil Jemaat</p>
               </div>

@@ -1,10 +1,58 @@
-import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState, useRef } from "react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+
+// Fetch SEJARAH content from API
+import kontenLandingPageService from "@/services/kontenLandingPageService";
+import { useQuery } from "@tanstack/react-query";
+
+// Default hardcoded data (fallback)
+const defaultHistory = [
+  {
+    judul: "Awal Mula",
+    konten: "GMIT Betlehem Oesapa Barat didirikan sebagai bagian dari pelayanan gereja di wilayah Timor, lahir dari semangat penyebaran Injil dan kebutuhan masyarakat lokal.",
+    urutan: "1950",
+    colorFrom: "from-blue-500",
+    colorTo: "to-indigo-600",
+  },
+  {
+    judul: "Pertumbuhan",
+    konten: "Masa pembangunan gedung gereja yang lebih besar dan pengembangan berbagai pelayanan seperti sekolah minggu dan persekutuan pemuda.",
+    urutan: "1970",
+    colorFrom: "from-green-500",
+    colorTo: "to-emerald-600",
+  },
+  {
+    judul: "Era Modern",
+    konten: "Mengintegrasikan teknologi dalam pelayanan dan keterlibatan aktif dalam pembangunan masyarakat serta pelestarian budaya Timor.",
+    urutan: "2024",
+    colorFrom: "from-purple-500",
+    colorTo: "to-pink-600",
+  }
+];
 
 export default function AboutSection() {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef(null);
+
+  // Fetch dynamic content
+  const { data: historyResponse } = useQuery({
+    queryKey: ["publicContent", "SEJARAH"],
+    queryFn: () => kontenLandingPageService.getPublicBySection("SEJARAH"),
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+  });
+
+  const historyData = historyResponse?.data;
+
+  // Use API data if available, otherwise use default
+  const displayHistory = historyData?.length > 0
+    ? historyData.map((item, index) => ({
+      ...item,
+      // Assign colors cyclically based on index
+      colorFrom: index % 3 === 0 ? "from-blue-500" : index % 3 === 1 ? "from-green-500" : "from-purple-500",
+      colorTo: index % 3 === 0 ? "to-indigo-600" : index % 3 === 1 ? "to-emerald-600" : "to-pink-600",
+    }))
+    : defaultHistory;
 
   useEffect(() => {
     // Add fallback timeout to ensure content shows even if IntersectionObserver fails
@@ -52,7 +100,7 @@ export default function AboutSection() {
             className={`transition-all duration-1000 ${isVisible ? "opacity-100 transform translate-y-0" : "opacity-0 transform translate-y-8"}`}
           >
             <h2 className="text-3xl lg:text-5xl font-bold mb-6 text-gray-800 dark:text-white">
-              Mengenal GMIT Imanuel Oepura
+              Mengenal GMIT Betlehem Oesapa Barat
             </h2>
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-indigo-500 mx-auto mb-6 rounded-full" />
             <p className="text-lg lg:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
@@ -69,59 +117,23 @@ export default function AboutSection() {
           >
             {/* Timeline Preview */}
             <div className="space-y-8">
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-white font-bold text-lg">1950</span>
+              {displayHistory.map((item, index) => (
+                <div key={index} className="flex items-start space-x-4">
+                  <div className="flex-shrink-0">
+                    <div className={`w-12 h-12 bg-gradient-to-br ${item.colorFrom} ${item.colorTo} rounded-full flex items-center justify-center shadow-lg`}>
+                      <span className="text-white font-bold text-sm">{item.urutan}</span>
+                    </div>
+                  </div>
+                  <div className="pt-1">
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                      {item.judul}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                      {item.konten}
+                    </p>
                   </div>
                 </div>
-                <div className="pt-1">
-                  <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
-                    Awal Mula
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                    GMIT Imanuel Oepura didirikan sebagai bagian dari pelayanan
-                    gereja di wilayah Timor, lahir dari semangat penyebaran
-                    Injil dan kebutuhan masyarakat lokal.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-white font-bold text-sm">1970</span>
-                  </div>
-                </div>
-                <div className="pt-1">
-                  <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
-                    Pertumbuhan
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                    Masa pembangunan gedung gereja yang lebih besar dan
-                    pengembangan berbagai pelayanan seperti sekolah minggu dan
-                    persekutuan pemuda.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-white font-bold text-sm">2024</span>
-                  </div>
-                </div>
-                <div className="pt-1">
-                  <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
-                    Era Modern
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                    Mengintegrasikan teknologi dalam pelayanan dan keterlibatan
-                    aktif dalam pembangunan masyarakat serta pelestarian budaya
-                    Timor.
-                  </p>
-                </div>
-              </div>
+              ))}
             </div>
 
             {/* CTA Buttons */}
@@ -152,10 +164,10 @@ export default function AboutSection() {
                 <div className="relative w-full h-80 lg:h-96">
                   <Image
                     fill
-                    alt="GMIT Imanuel Oepura"
+                    alt="GMIT Betlehem Oesapa Barat"
                     className="object-cover transform hover:scale-110 transition-transform duration-700"
                     sizes="(min-width: 1024px) 50vw, 100vw"
-                    src="/header/108d22eb.webp"
+                    src="/header/IMG_5867.JPG"
                   />
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
@@ -164,7 +176,7 @@ export default function AboutSection() {
                 <div className="absolute bottom-6 left-6 right-6">
                   <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-4 shadow-lg">
                     <h4 className="font-bold text-gray-800 dark:text-white mb-2">
-                      GMIT Imanuel Oepura
+                      GMIT Betlehem Oesapa Barat
                     </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-300">
                       "Bersama dalam kasih, bertumbuh dalam iman, melayani dalam pengharapan"

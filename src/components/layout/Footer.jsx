@@ -1,8 +1,18 @@
+import { useTheme } from "@/contexts/ThemeContext";
+
 export default function Footer() {
+  const { isDark } = useTheme();
+  // We don't need local state for mounted check because ThemeContext handles isLoaded, however the context itself ensures hydration match via isLoaded if needed, but here simple conditional is fine as the context initializes quickly.
+  // Actually, to be safe against hydration mismatch with custom context (which runs in useEffect), we can keep a local mounted check or just rely on the context's state if it syncs with local storage fast enough.
+  // Given ThemeContext structure, 'isDark' state is set in useEffect. So initially it might be false (light).
+  // Let's use isDark directly.
+
+  const logoSrc = isDark ? "/logo-dark.png" : "/logo-light.png";
+
   return (
     <footer className="footer sm:footer-horizontal bg-base-300 dark:bg-gray-800 text-base-content dark:text-gray-200 p-10 transition-colors duration-200">
       <nav className="flex flex-col items-start">
-        <img alt="Logo" className="mb-4" src="/logo.png" />
+        <img alt="Logo" className="mb-4 h-15 w-auto" src={logoSrc} />
         <p>
           Sungguh, alangkah baiknya dan indahnya, apabila saudara-saudara diam
           bersama dengan rukun!
@@ -11,9 +21,9 @@ export default function Footer() {
       <nav>
         <h6 className="footer-title">Kontak Kami </h6>
         <div className="grid grid-flow-row gap-2">
-          <p>0822-4793-0215</p>
-          <p>Kota Kupang, NTT 85142</p>
-          <p>Jl. H. R. Koroh</p>
+          <p>GMIT Betlehem Oesapa Barat</p>
+          <p>Oesapa Barat, Kota Kupang</p>
+          <p>NTT</p>
         </div>
       </nav>
       <nav>

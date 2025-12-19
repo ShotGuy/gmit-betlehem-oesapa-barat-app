@@ -9,13 +9,13 @@ import ScheduleRow from "@/components/home/schedule/scheduleRow";
 import ChurchStatistics from "@/components/home/statistics/churchStatistics";
 import ChurchStatisticsHorizontal from "@/components/home/statistics/churchStatisticsHorizontal";
 import PageTitle from "@/components/ui/PageTitle";
- 
+
 export default function Home() {
   return (
     <>
       <PageTitle
-        description="GMIT Jemaat Imanuel Oepura (JIO) - Gereja Masehi Injili di Timor yang melayani jemaat dengan penuh kasih dan dedikasi di Kupang, Nusa Tenggara Timur. Ibadah Minggu, Cell Group, Sidi, Pernikahan, Baptis, Pelayanan Jemaat."
-        keywords="GMIT Jemaat Imanuel Oepura, JIO, Gereja Kupang, Ibadah Minggu Kupang, Gereja Kristen, Gereja Protestan, Gereja di NTT, Ibadah Gereja, Pelayanan Jemaat, Kegiatan Gereja"
+        description="GMIT Jemaat Betlehem Oesapa Barat (JBOB) - Gereja Masehi Injili di Timor yang melayani jemaat dengan penuh kasih dan dedikasi di Kupang, Nusa Tenggara Timur. Ibadah Minggu, Cell Group, Sidi, Pernikahan, Baptis, Pelayanan Jemaat."
+        keywords="GMIT Jemaat Betlehem Oesapa Barat, JBOB, Gereja Kupang, Ibadah Minggu Kupang, Gereja Kristen, Gereja Protestan, Gereja di NTT, Ibadah Gereja, Pelayanan Jemaat, Kegiatan Gereja"
         title="Beranda"
       />
       <div className="bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
@@ -29,12 +29,12 @@ export default function Home() {
               alt="Home Head"
               className="object-cover w-full h-full"
               sizes="100vw"
-              src="/header/f92411b3.webp"
+              src="/hero.png"
             />
             <div className="absolute flex flex-col p-8">
               <p className="text-white text-2xl font-bold">Selamat Datang di</p>
               <h1 className="text-white text-4xl font-bold">
-                GMIT Imanuel Oepura
+                GMIT Betlehem Oesapa Barat
               </h1>
               <p className="text-white text-base">
                 Bersama dalam kasih, bertumbuh dalam iman, melayani dalam
@@ -43,7 +43,7 @@ export default function Home() {
             </div>
           </div>
 
- 
+
 
           {/* Mobile Statistics - Vertical */}
           <ChurchStatistics />
@@ -104,14 +104,14 @@ export default function Home() {
                 alt="Home Head"
                 className="object-cover w-full h-full brightness-60"
                 sizes="100vw"
-                src="/header/f92411b3.webp"
+                src="/hero.png"
               />
               <div className="absolute flex flex-col p-16">
                 <p className="text-white text-4xl font-bold">
                   Selamat Datang di
                 </p>
                 <h1 className="text-white text-6xl font-bold">
-                  GMIT Imanuel Oepura
+                  GMIT Betlehem Oesapa Barat
                 </h1>
                 <p className="text-white text-lg">
                   Bersama dalam kasih, bertumbuh dalam iman, melayani dalam
@@ -142,7 +142,7 @@ export default function Home() {
                 alt="Home Head"
                 className="object-cover brightness-75"
                 sizes="100vw"
-                src="/header/5dd0a95e.webp"
+                src="/hero.png"
               />
               <div className="relative z-10 flex flex-col w-full p-10">
                 <ScheduleRow

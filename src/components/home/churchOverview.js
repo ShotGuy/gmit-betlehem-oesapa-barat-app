@@ -36,7 +36,7 @@ export default function ChurchOverview() {
             className={`transition-all duration-1000 ${isVisible ? "opacity-100 transform translate-y-0" : "opacity-0 transform translate-y-8"}`}
           >
             <h2 className="text-3xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-800 via-indigo-700 to-purple-700 bg-clip-text text-transparent">
-              Sepintas Mengenai GMIT Imanuel Oepura
+              Sepintas Mengenai GMIT Betlehem Oesapa Barat
             </h2>
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mb-6 rounded-full" />
             <p className="text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
@@ -58,7 +58,7 @@ export default function ChurchOverview() {
                   Tentang Kami
                 </h3>
                 <p className="text-gray-700 leading-relaxed text-lg">
-                  GMIT Imanuel Oepura adalah gereja yang berkomitmen untuk hidup
+                  GMIT Betlehem Oesapa Barat adalah gereja yang berkomitmen untuk hidup
                   bersama dalam kasih Kristus, melayani sesama, dan melestarikan
                   budaya lokal Timor. Kami percaya bahwa iman Kristen dapat
                   hidup berdampingan dengan kearifan budaya setempat.
@@ -101,7 +101,7 @@ export default function ChurchOverview() {
               {/* Church Image */}
               <div className="relative overflow-hidden rounded-2xl shadow-2xl group">
                 <img
-                  alt="GMIT Imanuel Oepura"
+                  alt="GMIT Betlehem Oesapa Barat"
                   className="w-full h-64 lg:h-80 object-cover transform group-hover:scale-110 transition-transform duration-700"
                   src="/header/home.jpg"
                 />
@@ -119,7 +119,7 @@ export default function ChurchOverview() {
                 <div className="absolute bottom-4 left-4 right-4">
                   <div className="bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg">
                     <h4 className="font-bold text-gray-800 mb-1">
-                      GMIT Imanuel Oepura
+                      GMIT Betlehem Oesapa Barat
                     </h4>
                     <p className="text-sm text-gray-600 italic">
                       "Bersama dalam kasih, bertumbuh dalam iman, melayani dalam

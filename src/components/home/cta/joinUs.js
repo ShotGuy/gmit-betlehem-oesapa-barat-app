@@ -19,7 +19,7 @@ export default function JoinUs() {
           </div>
           <div className="flex items-center text-gray-600 dark:text-gray-300">
             <MapPin className="h-5 w-5 mr-2" />
-            <span>GMIT Imanuel Oepura</span>
+            <span>GMIT Betlehem Oesapa Barat</span>
           </div>
         </div>
         {/* <button className="btn btn-success btn-wide self-start rounded-full">
@@ -34,7 +34,7 @@ export default function JoinUs() {
           alt="Bergabung Event"
           className="object-cover"
           sizes="(min-width: 768px) 384px, 100vw"
-          src="/header/76324234-evening.webp"
+          src="/header/sore2.png"
         />
       </div>
     </div>

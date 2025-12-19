@@ -18,9 +18,9 @@ export default function SejarahPage() {
   return (
     <>
       <PageTitle
-        description="Sejarah perjalanan GMIT Jemaat Imanuel Oepura dari masa ke masa. Mengenal jejak pelayanan dan perkembangan jemaat dalam melayani Tuhan dan sesama di Kupang, Nusa Tenggara Timur."
-        title="Sejarah GMIT Imanuel Oepura"
-        keywords="Sejarah GMIT Imanuel Oepura, Sejarah Gereja di Kupang, Perjalanan Gereja, Sejarah Jemaat, Gereja Masehi Injili di Timor, Misi Gereja, Sejarah JIO"
+        description="Sejarah perjalanan GMIT Jemaat Betlehem Oesapa Barat dari masa ke masa. Mengenal jejak pelayanan dan perkembangan jemaat dalam melayani Tuhan dan sesama di Kupang, Nusa Tenggara Timur."
+        title="Sejarah GMIT Betlehem Oesapa Barat"
+        keywords="Sejarah GMIT Betlehem Oesapa Barat, Sejarah Gereja di Kupang, Perjalanan Gereja, Sejarah Jemaat, Gereja Masehi Injili di Timor, Misi Gereja, Sejarah JBOB"
       />
       <div className="bg-gray-50">
         {/* Hero Section with Parallax */}
@@ -30,9 +30,9 @@ export default function SejarahPage() {
             style={{ transform: `translateY(${scrollY * 0.5}px)` }}
           >
             <Image
-              alt="Sejarah GMIT Imanuel Oepura"
+              alt="Sejarah GMIT Betlehem Oesapa Barat"
               className="w-full h-full object-cover"
-              src="/header/5dd0a95e.webp"
+              src="/header/malam.png"
               fill
               sizes="100vw"
               priority
@@ -48,7 +48,7 @@ export default function SejarahPage() {
               </h1>
               <div className="w-32 h-1 bg-gradient-to-r from-yellow-400 via-white to-orange-400 mx-auto mb-8 rounded-full" />
               <p className="text-xl md:text-2xl max-w-4xl mx-auto leading-relaxed font-light">
-                Perjalanan panjang GMIT Imanuel Oepura dalam melayani dan
+                Perjalanan panjang GMIT Betlehem Oesapa Barat dalam melayani dan
                 berkarya untuk kemuliaan Tuhan dan kebaikan sesama
               </p>
             </div>
@@ -70,7 +70,7 @@ export default function SejarahPage() {
                 Warisan Iman Yang Berkelanjutan
               </h2>
               <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-8">
-                Lebih dari tujuh dekade, GMIT Imanuel Oepura telah menjadi saksi
+                Lebih dari tujuh dekade, GMIT Betlehem Oesapa Barat telah menjadi saksi
                 perubahan zaman sambil tetap mempertahankan nilai-nilai iman
                 Kristen dan budaya lokal Timor. Setiap era membawa tantangan dan
                 berkat tersendiri, namun komitmen untuk melayani tetap menjadi
@@ -83,7 +83,7 @@ export default function SejarahPage() {
                   generasi."
                 </blockquote>
                 <p className="text-blue-600 mt-4">
-                  — Majelis GMIT Imanuel Oepura
+                  — Majelis GMIT Betlehem Oesapa Barat
                 </p>
               </div>
             </div>
@@ -193,7 +193,7 @@ export default function SejarahPage() {
             </h2>
             <p className="text-lg md:text-xl mb-8 opacity-90">
               Sejarah tidak berhenti di masa lalu. Anda bisa menjadi bagian dari
-              perjalanan iman dan pelayanan GMIT Imanuel Oepura ke depan.
+              perjalanan iman dan pelayanan GMIT Betlehem Oesapa Barat ke depan.
             </p>
             <div className="space-y-4 md:space-y-0 md:space-x-4 md:flex md:justify-center">
               <a

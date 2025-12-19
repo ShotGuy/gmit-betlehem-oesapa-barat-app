@@ -65,8 +65,8 @@ export default function Sidebar({
         {/* Header */}
         <div className="px-4 py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
           <div className="text-gray-900 dark:text-white">
-            <h1 className="text-xl font-bold leading-tight">GMIT Imanuel</h1>
-            <h2 className="text-xl font-bold leading-tight">Oepura</h2>
+            <h1 className="text-xl font-bold leading-tight">GMIT Betlehem</h1>
+            <h2 className="text-xl font-bold leading-tight">Oesapa Barat</h2>
           </div>
         </div>
 

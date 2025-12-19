@@ -7,7 +7,7 @@ import * as XLSX from "xlsx";
 class ExportService {
   constructor() {
     this.defaultConfig = {
-      companyName: "GMIT Imanuel Oepura",
+      companyName: "GMIT Betlehem Oesapa Barat",
       companyAddress: "Alamat Gereja",
       companyPhone: "Telepon Gereja",
       logo: null, // Can be added later
@@ -400,7 +400,7 @@ class ExportService {
       // Footer text
       doc.setFontSize(8);
       doc.text(
-        `Generated on ${format(new Date(), "dd/MM/yyyy HH:mm")} - GMIT Imanuel Oepura`,
+        `Generated on ${format(new Date(), "dd/MM/yyyy HH:mm")} - GMIT Betlehem Oesapa Barat`,
         pageWidth / 2,
         pageHeight - 12,
         { align: "center" }

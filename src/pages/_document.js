@@ -4,10 +4,10 @@ export default function Document() {
   return (
     <Html lang="id">
       <Head>
-        <meta content="GMIT Imanuel Oepura" name="application-name" />
+        <meta content="GMIT Betlehem Oesapa Barat" name="application-name" />
         <meta content="yes" name="apple-mobile-web-app-capable" />
         <meta content="default" name="apple-mobile-web-app-status-bar-style" />
-        <meta content="GMIT JIO" name="apple-mobile-web-app-title" />
+        <meta content="GMIT JBOB" name="apple-mobile-web-app-title" />
         <meta
           content="GMIT Jemaat Imanuel Oepura (JIO) - Gereja Masehi Injili di Timor yang melayani jemaat dengan penuh kasih dan dedikasi di Kupang, Nusa Tenggara Timur. Ibadah Minggu, Cell Group, Sidi, Pernikahan, Baptis, Pelayanan Jemaat, dan kegiatan gereja lainnya di Kupang NTT."
           name="description"
@@ -32,18 +32,18 @@ export default function Document() {
           content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
           name="bingbot"
         />
-        <meta content="GMIT Jemaat Imanuel Oepura" name="author" />
-        <meta content="GMIT Jemaat Imanuel Oepura" name="publisher" />
+        <meta content="GMIT Betlehem Oesapa Barat" name="author" />
+        <meta content="GMIT Betlehem Oesapa Barat" name="publisher" />
         <meta content="id" name="language" />
         <meta content="ID-NT" name="geo.region" />
         <meta content="Kupang" name="geo.placename" />
         <meta content="-10.1718;123.6044" name="geo.position" />
         <meta content="-10.1718, 123.6044" name="ICBM" />
-        
+
         {/* Enhanced SEO Keywords */}
-        <meta 
-          content="GMIT, GMIT Imanuel Oepura, GMIT Jemaat Imanuel Oepura, JIO, Gereja Imanuel Oepura Kupang, Gereja Kristen Kupang, Gereja Protestan Kupang, Gereja di Kupang, Ibadah Minggu Kupang, Ibadah Gereja Kupang, Pelayanan Gereja, Jemaat GMIT, Sidi GMIT, Baptis GMIT, Pernikahan Gereja, Kegiatan Gereja Kupang, NTT, Nusa Tenggara Timur, GMIT Kupang, GMIT JIO" 
-          name="keywords" 
+        <meta
+          content="GMIT, GMIT Imanuel Oepura, GMIT Jemaat Imanuel Oepura, JIO, Gereja Imanuel Oepura Kupang, Gereja Kristen Kupang, Gereja Protestan Kupang, Gereja di Kupang, Ibadah Minggu Kupang, Ibadah Gereja Kupang, Pelayanan Gereja, Jemaat GMIT, Sidi GMIT, Baptis GMIT, Pernikahan Gereja, Kegiatan Gereja Kupang, NTT, Nusa Tenggara Timur, GMIT Kupang, GMIT JIO"
+          name="keywords"
         />
 
         <link href="/apple-touch-icon.png" rel="apple-touch-icon" />
@@ -78,7 +78,7 @@ export default function Document() {
 
         <meta content="summary_large_image" name="twitter:card" />
         <meta content="https://www.gmitjio-oepura.org" name="twitter:url" />
-        <meta content="GMIT Imanuel Oepura - Gereja Masehi Injili di Timor" name="twitter:title" />
+        <meta content="GMIT Betlehem Oesapa Barat - Gereja Masehi Injili di Timor" name="twitter:title" />
         <meta
           content="GMIT Jemaat Imanuel Oepura (JIO) - Gereja Masehi Injili di Timor yang melayani jemaat dengan penuh kasih dan dedikasi di Kupang, Nusa Tenggara Timur. Ibadah, Pelayanan, dan Persekutuan Jemaat."
           name="twitter:description"
@@ -89,15 +89,15 @@ export default function Document() {
         />
         <meta content="@gmitjio" name="twitter:site" />
         <meta content="@gmitjio" name="twitter:creator" />
-        
+
         {/* Enhanced Open Graph Tags */}
         <meta content="website" property="og:type" />
-        <meta content="GMIT Imanuel Oepura - Gereja Masehi Injili di Timor" property="og:title" />
+        <meta content="GMIT Betlehem Oesapa Barat - Gereja Masehi Injili di Timor" property="og:title" />
         <meta
           content="GMIT Jemaat Imanuel Oepura (JIO) - Gereja Masehi Injili di Timor yang melayani jemaat dengan penuh kasih dan dedikasi di Kupang, Nusa Tenggara Timur. Ibadah, Pelayanan, dan Persekutuan Jemaat."
           property="og:description"
         />
-        <meta content="GMIT Jemaat Imanuel Oepura" property="og:site_name" />
+        <meta content="GMIT Betlehem Oesapa Barat" property="og:site_name" />
         <meta content="https://www.gmitjio-oepura.org" property="og:url" />
         <meta
           content="https://www.gmitjio-oepura.org/logo-GMIT.png"
@@ -107,7 +107,7 @@ export default function Document() {
         <meta content="630" property="og:image:height" />
         <meta content="image/png" property="og:image:type" />
         <meta content="id_ID" property="og:locale" />
-        <meta content="GMIT Jemaat Imanuel Oepura" property="og:locality" />
+        <meta content="GMIT Betlehem Oesapa Barat" property="og:locality" />
         <meta content="Kupang" property="og:region" />
         <meta content="ID" property="og:country-name" />
 
@@ -192,14 +192,34 @@ export default function Document() {
           dangerouslySetInnerHTML={{
             __html: `
             if ('serviceWorker' in navigator) {
-              window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js')
-                  .then(function(registration) {
-                    console.log('SW registered: ', registration);
-                  }, function(registrationError) {
-                    console.log('SW registration failed: ', registrationError);
-                  });
-              });
+              // Check if we are in development mode (localhost)
+              const isLocalhost = Boolean(
+                window.location.hostname === 'localhost' ||
+                window.location.hostname === '[::1]' ||
+                window.location.hostname.match(
+                  /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
+                )
+              );
+
+              if (isLocalhost) {
+                // IN DEV: Unregister to prevent caching issues
+                console.log('Dev mode detected: Unregistering Service Worker');
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                  for(let registration of registrations) {
+                    registration.unregister();
+                  }
+                });
+              } else {
+                // IN PROD: Register Service Worker
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                      console.log('SW registered: ', registration);
+                    }, function(registrationError) {
+                      console.log('SW registration failed: ', registrationError);
+                    });
+                });
+              }
             }
           `,
           }}

@@ -18,9 +18,9 @@ export default function Tentang() {
   return (
     <div className="bg-gray-50">
       <PageTitle
-        description="Tentang GMIT Jemaat Imanuel Oepura (JIO) - Gereja Masehi Injili di Timor yang melayani jemaat dengan penuh kasih dan dedikasi di Kupang, Nusa Tenggara Timur. Sejarah, Visi, dan Misi Gereja."
+        description="Tentang GMIT Jemaat Betlehem Oesapa Barat (JBOB) - Gereja Masehi Injili di Timor yang melayani jemaat dengan penuh kasih dan dedikasi di Kupang, Nusa Tenggara Timur. Sejarah, Visi, dan Misi Gereja."
         title="Tentang Kami"
-        keywords="Tentang GMIT Imanuel Oepura, Sejarah Gereja, Visi Misi Gereja, Profil Gereja, Gereja di Kupang, Gereja Masehi Injili, JIO Kupang"
+        keywords="Tentang GMIT Betlehem Oesapa Barat, Sejarah Gereja, Visi Misi Gereja, Profil Gereja, Gereja di Kupang, Gereja Masehi Injili, JBOB Kupang"
       />
       {/* Hero Section with Parallax */}
       <div className="relative h-screen flex justify-center items-center overflow-hidden">
@@ -31,10 +31,10 @@ export default function Tentang() {
           <Image
             fill
             priority
-            alt="GMIT Imanuel Oepura"
+            alt="GMIT Betlehem Oesapa Barat"
             className="w-full h-full object-cover"
             sizes="100vw"
-            src="/header/190c3d1c.webp"
+            src="/header/malam2.png"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/60" />
         </div>
@@ -47,7 +47,7 @@ export default function Tentang() {
             </h1>
             <div className="w-32 h-1 bg-gradient-to-r from-blue-400 via-white to-indigo-400 mx-auto mb-8 rounded-full" />
             <p className="text-xl md:text-2xl max-w-4xl mx-auto leading-relaxed font-light">
-              GMIT Imanuel Oepura - Gereja yang hidup, bertumbuh dalam iman,
+              GMIT Betlehem Oesapa Barat - Gereja yang hidup, bertumbuh dalam iman,
               pengharapan dan kasih, melayani dengan budaya lokal yang kaya
             </p>
           </div>
@@ -66,7 +66,7 @@ export default function Tentang() {
         <div className="max-w-6xl mx-auto text-center">
           <div className="animate-fade-in-up">
             <h2 className="text-3xl md:text-5xl font-bold mb-8 text-gray-800">
-              Selamat Datang di GMIT Imanuel Oepura
+              Selamat Datang di GMIT Betlehem Oesapa Barat
             </h2>
             <p className="text-lg md:text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
               Kami adalah komunitas iman yang berkomitmen untuk hidup bersama

@@ -12,13 +12,13 @@ import MajelisLayout from "@/components/layout/MajelisLayout";
 // import PWAInstallBanner from "@/components/pwa/PWAInstallBanner";
 import { AuthProvider } from "@/contexts/AuthContext";
 // import { PWAProvider } from "@/contexts/PWAContext";
+import MainNavigation from "@/components/layout/MainNavigation";
 import PWAInstallBanner from "@/components/pwa/PWAInstallBanner";
 import { PWAProvider } from "@/contexts/PWAContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { queryClient } from "@/lib/queryClient";
 import "@/styles/globals.css";
 import "leaflet/dist/leaflet.css";
-import Navigation from "@/components/layout/Navigation";
 
 export default function App({ Component, pageProps, router }) {
   const pathname = router.pathname;
@@ -134,14 +134,14 @@ export default function App({ Component, pageProps, router }) {
       <ThemeProvider>
         <PWAProvider>
           <AuthProvider>
-            <Navigation>
+            <MainNavigation>
               <Toaster richColors position="top-right" />
               <PWAInstallBanner />
 
               <Component {...pageProps} />
               <Footer />
               {/* <InstallPrompt /> */}
-            </Navigation>
+            </MainNavigation>
           </AuthProvider>
         </PWAProvider>
       </ThemeProvider>
