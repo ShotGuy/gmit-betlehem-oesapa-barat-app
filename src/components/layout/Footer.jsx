@@ -1,81 +1,89 @@
 import { useTheme } from "@/contexts/ThemeContext";
+import { Facebook, Heart, Instagram, Youtube } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 export default function Footer() {
   const { isDark } = useTheme();
-  // We don't need local state for mounted check because ThemeContext handles isLoaded, however the context itself ensures hydration match via isLoaded if needed, but here simple conditional is fine as the context initializes quickly.
-  // Actually, to be safe against hydration mismatch with custom context (which runs in useEffect), we can keep a local mounted check or just rely on the context's state if it syncs with local storage fast enough.
-  // Given ThemeContext structure, 'isDark' state is set in useEffect. So initially it might be false (light).
-  // Let's use isDark directly.
-
-  const logoSrc = isDark ? "/logo-dark.png" : "/logo-light.png";
 
   return (
-    <footer className="footer sm:footer-horizontal bg-base-300 dark:bg-gray-800 text-base-content dark:text-gray-200 p-10 transition-colors duration-200">
-      <nav className="flex flex-col items-start">
-        <img alt="Logo" className="mb-4 h-15 w-auto" src={logoSrc} />
-        <p>
-          Sungguh, alangkah baiknya dan indahnya, apabila saudara-saudara diam
-          bersama dengan rukun!
-        </p>
-      </nav>
-      <nav>
-        <h6 className="footer-title">Kontak Kami </h6>
-        <div className="grid grid-flow-row gap-2">
-          <p>GMIT Betlehem Oesapa Barat</p>
-          <p>Oesapa Barat, Kota Kupang</p>
-          <p>NTT</p>
+    <footer className="bg-gray-950 text-gray-300 pt-20 pb-10 border-t border-gray-900">
+      <div className="max-w-7xl mx-auto px-4 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-16">
+
+          {/* Brand Column */}
+          <div className="lg:col-span-1">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="relative w-12 h-12">
+                <Image
+                  src="/logo-dark.png" // Always use dark mode logo style for dark footer, or keep dynamic if needed. Assuming white text logo for dark bg.
+                  alt="Logo GMIT"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+              <div>
+                <h3 className="font-bold text-white leading-none">GMIT Betlehem</h3>
+                <p className="text-sm text-gray-400">Oesapa Barat</p>
+              </div>
+            </div>
+            <p className="text-gray-400 text-sm leading-relaxed mb-6">
+              Gereja yang memuliakan Tuhan, membangun jemaat yang dewasa, dan menjadi berkat bagi sesama.
+            </p>
+            <div className="flex gap-4">
+              <a href="#" className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center hover:bg-amber-500 hover:text-white transition-all duration-300">
+                <Facebook className="w-5 h-5" />
+              </a>
+              <a href="#" className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center hover:bg-red-600 hover:text-white transition-all duration-300">
+                <Youtube className="w-5 h-5" />
+              </a>
+              <a href="#" className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center hover:bg-pink-600 hover:text-white transition-all duration-300">
+                <Instagram className="w-5 h-5" />
+              </a>
+            </div>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h4 className="font-serif text-lg font-bold text-white mb-6">Tautan Cepat</h4>
+            <ul className="space-y-3">
+              <li><Link href="/" className="hover:text-amber-500 transition-colors">Beranda</Link></li>
+              <li><Link href="/tentang" className="hover:text-amber-500 transition-colors">Tentang Kami</Link></li>
+              <li><Link href="/warta" className="hover:text-amber-500 transition-colors">Warta Jemaat</Link></li>
+              <li><Link href="/jadwal" className="hover:text-amber-500 transition-colors">Jadwal Ibadah</Link></li>
+            </ul>
+          </div>
+
+          {/* Contact Info */}
+          <div>
+            <h4 className="font-serif text-lg font-bold text-white mb-6">Hubungi Kami</h4>
+            <ul className="space-y-4 text-sm text-gray-400">
+              <li className="flex items-start gap-3">
+                <span className="text-amber-500">📍</span>
+                <span>Jln. Soverdi, Oesapa Barat, Kec. Kelapa Lima, Kota Kupang, NTT</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-amber-500">📞</span>
+                <span>(0380) 1234567</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-amber-500">📧</span>
+                <span>secretariat@gmitjbob.org</span>
+              </li>
+            </ul>
+          </div>
+
+
         </div>
-      </nav>
-      <nav>
-        <h6 className="footer-title">Ikuti Kami</h6>
-        <div className="grid grid-flow-col gap-4">
-          <a
-            href="https://www.facebook.com/GMITJIO/"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <svg
-              className="fill-current"
-              height="24"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z" />
-            </svg>
-          </a>
-          <a
-            href="https://www.youtube.com/@gmit_imanuel_oepura"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <svg
-              className="fill-current"
-              height="24"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
-            </svg>
-          </a>
-          <a
-            href="https://www.instagram.com/gmit_imanuelopr"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <svg
-              className="fill-current"
-              height="24"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-            </svg>
-          </a>
+
+        {/* Copyright */}
+        <div className="pt-8 border-t border-gray-900 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
+          <p>© {new Date().getFullYear()} GMIT Betlehem Oesapa Barat. All rights reserved.</p>
+          <p className="flex items-center gap-1">
+            Dibuat dengan <Heart className="w-4 h-4 text-red-500 fill-current" /> untuk Kemuliaan Tuhan
+          </p>
         </div>
-      </nav>
+      </div>
     </footer>
   );
 }

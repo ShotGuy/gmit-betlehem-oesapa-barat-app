@@ -1,139 +1,142 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-
+import useEmblaCarousel from "embla-carousel-react";
+import { useCallback, useEffect, useState } from "react";
 import publicStatisticsService from "../../../services/publicStatisticsService";
+import StatDonutChart from "./StatDonutChart";
 
-import StatPieChart from "./statPieChart";
+const DUMMY_DATA = [
+  {
+    title: "Jemaat Kategorial",
+    data: [
+      { name: "PAR", value: 600 },
+      { name: "Remaja", value: 143 },
+      { name: "Dewasa", value: 132 },
+      { name: "Lansia", value: 324 },
+    ]
+  },
+  {
+    title: "Jemaat Rayon 1",
+    data: [
+      { name: "Rayon 1", value: 132 },
+      { name: "Rayon 2", value: 324 },
+      { name: "Rayon 3", value: 143 },
+      { name: "Rayon 4", value: 600 },
+    ]
+  },
+  {
+    title: "Jemaat Rayon 2",
+    data: [
+      { name: "Rayon 5", value: 200 },
+      { name: "Rayon 6", value: 450 },
+      { name: "Rayon 7", value: 300 },
+      { name: "Rayon 8", value: 150 },
+    ]
+  },
+  {
+    title: "Jumlah Jemaat",
+    data: [
+      { name: "Pria", value: 600 },
+      { name: "Wanita", value: 400 },
+    ]
+  },
+  {
+    title: "Statistik Profesi",
+    data: [
+      { name: "PNS", value: 150 },
+      { name: "Swasta", value: 300 },
+      { name: "TNI/Polri", value: 50 },
+      { name: "Lainnya", value: 400 },
+    ]
+  }
+];
 
 export default function ChurchStatisticsHorizontal() {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "start" });
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [scrollSnaps, setScrollSnaps] = useState([]);
 
-  // Replace useEffect with TanStack Query
   const {
-    data: chartData = [],
+    data: apiData,
     isLoading,
     error,
   } = useQuery({
     queryKey: ["churchStatistics"],
     queryFn: async () => {
-      const response = await publicStatisticsService.getChurchStatistics();
-      return publicStatisticsService.formatChartData(response);
+      try {
+        const response = await publicStatisticsService.getChurchStatistics();
+        return publicStatisticsService.formatChartData(response);
+      } catch (e) {
+        console.warn("Using dummy data due to API error", e);
+        return null;
+      }
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 3,
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
-  // Calculate how many slides we have (showing 1 chart per slide)
-  const chartsPerSlide = 1;
-  const totalSlides = Math.ceil(chartData.length / chartsPerSlide);
+  // Use API data
+  const chartData = apiData || [];
 
-  // Auto-rotation effect (only create interval when we have data)
-  useState(() => {
-    if (totalSlides > 1) {
-      const interval = setInterval(() => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % totalSlides);
-      }, 10000);
-      return () => clearInterval(interval);
-    }
-  });
+  const scrollTo = useCallback((index) => emblaApi && emblaApi.scrollTo(index), [emblaApi]);
 
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className="block md:hidden w-full bg-slate-800 dark:bg-gray-900 p-4 py-6 overflow-hidden transition-colors duration-300">
-        <div className="flex flex-col h-80 items-center justify-center">
-          <div className="loading loading-spinner loading-lg text-blue-400" />
-          <p className="mt-4 text-sm text-gray-300 dark:text-gray-200">Memuat statistik...</p>
-        </div>
-      </div>
-    );
-  }
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
 
-  // Show error state
-  if (error) {
-    return (
-      <div className="block md:hidden w-full bg-slate-800 dark:bg-gray-900 p-4 py-6 overflow-hidden transition-colors duration-300">
-        <div className="flex flex-col h-80 items-center justify-center">
-          <div className="text-red-400 text-center">
-            <svg
-              className="w-16 h-16 mx-auto mb-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-              />
-            </svg>
-            <p className="text-sm text-gray-300 dark:text-gray-200">Gagal memuat statistik gereja</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Don't render if no data
-  if (!chartData.length) {
-    return null;
-  }
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    setScrollSnaps(emblaApi.scrollSnapList());
+    emblaApi.on("select", onSelect);
+    emblaApi.on("reInit", onSelect);
+  }, [emblaApi, onSelect]);
 
   return (
-    <div className="block md:hidden w-full bg-base-300 dark:bg-gray-800 p-4 py-6 overflow-hidden transition-colors duration-300">
-      <div className="flex flex-col h-80">
-        {/* Chart container that takes most of the height */}
-        <div className="flex-1 relative overflow-hidden min-h-0">
-          <div
-            className="transition-transform duration-500 ease-in-out h-full flex"
-            style={{
-              transform: `translateX(-${currentIndex * 100}%)`,
-            }}
-          >
-            {Array.from({ length: totalSlides }, (_, slideIndex) => {
-              const startIdx = slideIndex * chartsPerSlide;
-              const endIdx = startIdx + chartsPerSlide;
-              const slideCharts = chartData.slice(startIdx, endIdx);
-
-              return (
-                <div
-                  key={slideIndex}
-                  className="h-full w-full flex-shrink-0 flex justify-center items-center px-4"
-                >
-                  {slideCharts.map((chart, chartIndex) => (
-                    <div
-                      key={`${slideIndex}-${chartIndex}`}
-                      className="w-full max-w-xs h-full"
-                    >
-                      <StatPieChart
-                        data={chart.data}
-                        size="small"
-                        title={chart.title}
-                      />
-                    </div>
-                  ))}
-                </div>
-              );
-            })}
-          </div>
+    <div className="relative py-16 bg-white dark:bg-gray-900 transition-colors duration-500 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <span className="inline-block h-1 w-20 bg-amber-500 rounded-full mb-4"></span>
+          <h2 className="font-serif text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100">
+            Data Kehidupan Jemaat
+          </h2>
+          <p className="mt-4 text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            Gambaran umum pertumbuhan dan demografi jemaat kami yang terus bertumbuh dalam kasih Tuhan.
+          </p>
         </div>
 
-        {/* Indicators at bottom */}
-        {totalSlides > 1 && (
-          <div className="flex justify-center space-x-2 py-3">
-            {Array.from({ length: totalSlides }, (_, index) => (
+        {/* Carousel Container */}
+        <div className="relative">
+          <div className="overflow-hidden" ref={emblaRef}>
+            <div className="flex -ml-4 touch-pan-y">
+              {chartData.map((chart, index) => (
+                <div key={index} className="flex-[0_0_100%] md:flex-[0_0_50%] lg:flex-[0_0_33.333%] pl-4 min-w-0">
+                  <div className="bg-gray-50 dark:bg-gray-800/50 rounded-[2rem] p-6 shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md transition-shadow h-full">
+                    <StatDonutChart
+                      title={chart.title}
+                      data={chart.data}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Dot Navigation */}
+          <div className="flex justify-center gap-2 mt-8">
+            {scrollSnaps.map((_, index) => (
               <button
                 key={index}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${index === selectedIndex
+                  ? "bg-amber-500 w-8"
+                  : "bg-gray-300 dark:bg-gray-700 hover:bg-amber-300"
+                  }`}
+                onClick={() => scrollTo(index)}
                 aria-label={`Go to slide ${index + 1}`}
-                className={`w-2 h-2 rounded-full transition-colors cursor-pointer ${
-                  index === currentIndex ? "bg-primary" : "bg-gray-400 dark:bg-gray-500"
-                }`}
-                onClick={() => setCurrentIndex(index)}
               />
             ))}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

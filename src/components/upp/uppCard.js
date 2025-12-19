@@ -92,24 +92,24 @@ export default function UppCard({ pengumuman }) {
   return (
     <div className="w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden mt-10 text-gray-950 dark:text-gray-100 relative transition-colors duration-300">
       {/* Priority Badge */}
+      {/* Priority/Pinned Badges - Absolute Top Right */}
       {(isPinned || prioritas === "HIGH") && (
-        <div className="absolute top-2 right-2 z-10">
-          {isPinned && <div className="badge badge-secondary mb-1">📌 Pinned</div>}
-          {prioritas === "HIGH" && <div className={`badge ${getPriorityColor(prioritas)}`}>{prioritas}</div>}
+        <div className="absolute top-3 right-3 z-10 flex flex-col items-end gap-1">
+          {isPinned && <div className="badge badge-secondary shadow-sm font-semibold">📌 Pinned</div>}
+          {prioritas === "HIGH" && <div className={`badge ${getPriorityColor(prioritas)} shadow-sm font-semibold`}>{prioritas}</div>}
         </div>
       )}
 
       {/* Event Info */}
-      <div className="p-6 flex flex-col">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-gray-500 dark:text-gray-400 text-sm flex items-center">
+      <div className="p-6 flex flex-col h-full pt-10">
+        <div className="flex items-center gap-3 mb-2 text-sm">
+          <p className="text-gray-500 dark:text-gray-400 flex items-center">
             <Calendar
-              className="inline-block mr-1"
-              size={16}
+              className="inline-block mr-1.5 w-4 h-4"
             />
             {formattedDate}
           </p>
-          {jenis && <span className="badge badge-outline text-xs">{jenis.nama}</span>}
+          {jenis && <span className="badge badge-outline badge-sm text-xs font-medium">{jenis.nama}</span>}
         </div>
 
         <h2 className="text-xl font-bold mt-2 h-16 overflow-y-auto flex-shrink-0 leading-tight text-gray-900 dark:text-white">

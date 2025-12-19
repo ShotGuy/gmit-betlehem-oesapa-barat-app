@@ -1,12 +1,11 @@
 import Image from "next/image";
 
 import AboutSection from "@/components/home/aboutSection";
-import DailyVerse from "@/components/home/cta/dailyVerse";
-import JoinUs from "@/components/home/cta/joinUs";
+import CommunityCallToAction from "@/components/home/cta/CommunityCallToAction";
+import HeroSection from "@/components/home/HeroSection";
 import NewsRow from "@/components/home/newsRow";
 import OurLocation from "@/components/home/ourLocation";
-import ScheduleRow from "@/components/home/schedule/scheduleRow";
-import ChurchStatistics from "@/components/home/statistics/churchStatistics";
+import WorshipSchedule from "@/components/home/schedule/WorshipSchedule";
 import ChurchStatisticsHorizontal from "@/components/home/statistics/churchStatisticsHorizontal";
 import PageTitle from "@/components/ui/PageTitle";
 
@@ -46,7 +45,7 @@ export default function Home() {
 
 
           {/* Mobile Statistics - Vertical */}
-          <ChurchStatistics />
+
 
           {/* Rest of content */}
           <ChurchStatisticsHorizontal />
@@ -56,33 +55,9 @@ export default function Home() {
 
           <NewsRow />
 
-          <div className="p-4 min-h-screen flex flex-col gap-4 bg-gray-100 dark:bg-gray-900 items-center justify-center">
-            <JoinUs />
-            <DailyVerse />
-          </div>
+          <CommunityCallToAction />
 
-          <div className="relative min-h-fit">
-            <Image
-              fill
-              alt="Home Head"
-              className="object-cover"
-              sizes="100vw"
-              src="/header/f92411b3.webp"
-            />
-            <div className="relative z-10 flex flex-col w-full p-4">
-              <ScheduleRow
-                jenisIbadah="Cell Group/Kelompok Kecil"
-                limit={4}
-                title="Jadwal Cell Group"
-              />
-              <ScheduleRow
-                kategori="Keluarga"
-                limit={6}
-                title="Jadwal Ibadah Keluarga"
-              />
-              <ScheduleRow limit={4} title="Semua Jadwal Ibadah" />
-            </div>
-          </div>
+          <WorshipSchedule />
 
           <div className="w-full p-4">
             <OurLocation />
@@ -92,36 +67,17 @@ export default function Home() {
         {/* Desktop Layout - Side-by-side */}
         <div className="hidden lg:flex">
           {/* Left Column - Church Statistics (Sidebar) */}
-          <ChurchStatistics />
+
 
           {/* Right Column - Main Content */}
           <div className="flex-1 flex flex-col overflow-y-auto">
-            {/* Hero */}
-            <div className="relative flex justify-start items-center h-screen">
-              <Image
-                fill
-                priority
-                alt="Home Head"
-                className="object-cover w-full h-full brightness-60"
-                sizes="100vw"
-                src="/hero.png"
-              />
-              <div className="absolute flex flex-col p-16">
-                <p className="text-white text-4xl font-bold">
-                  Selamat Datang di
-                </p>
-                <h1 className="text-white text-6xl font-bold">
-                  GMIT Betlehem Oesapa Barat
-                </h1>
-                <p className="text-white text-lg">
-                  Bersama dalam kasih, bertumbuh dalam iman, melayani dalam
-                  pengharapan.
-                </p>
-              </div>
-            </div>
+            {/* New Hero Section */}
+            <HeroSection />
 
-            {/* Horizontal Statistics */}
-            <ChurchStatisticsHorizontal />
+            {/* Horizontal Statistics - Keeping for now but verify style later */}
+            <div className="-mt-12 relative z-20 px-4 max-w-7xl mx-auto">
+              <ChurchStatisticsHorizontal />
+            </div>
 
             {/* About Section */}
             <AboutSection />
@@ -129,35 +85,11 @@ export default function Home() {
             {/* News */}
             <NewsRow />
 
-            {/* CTA */}
-            <div className="p-8 min-h-screen flex flex-col gap-4 bg-gray-100 dark:bg-gray-900 items-center justify-center">
-              <JoinUs />
-              <DailyVerse />
-            </div>
+            {/* CTA Community Banner */}
+            <CommunityCallToAction />
 
-            {/* Schedule */}
-            <div className="relative min-h-fit">
-              <Image
-                fill
-                alt="Home Head"
-                className="object-cover brightness-75"
-                sizes="100vw"
-                src="/hero.png"
-              />
-              <div className="relative z-10 flex flex-col w-full p-10">
-                <ScheduleRow
-                  jenisIbadah="Cell Group/Kelompok Kecil"
-                  limit={4}
-                  title="Jadwal Cell Group"
-                />
-                <ScheduleRow
-                  kategori="Keluarga"
-                  limit={6}
-                  title="Jadwal Ibadah Keluarga"
-                />
-                <ScheduleRow limit={4} title="Semua Jadwal Ibadah" />
-              </div>
-            </div>
+            {/* Worship Schedule */}
+            <WorshipSchedule />
 
             {/* Location */}
             <div className="w-full p-8">

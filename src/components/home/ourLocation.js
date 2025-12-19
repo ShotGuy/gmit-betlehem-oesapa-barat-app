@@ -1,50 +1,89 @@
+import { Mail, MapPin } from "lucide-react";
+
 export default function OurLocation() {
   return (
-    <div className="py-12 bg-gray-50 dark:bg-gray-800 transition-colors duration-300">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white mb-2">
-            Kunjungi Kami
-          </h2>
-          <p className="text-gray-600 dark:text-gray-300">
-            Bergabunglah dengan keluarga besar GMIT Imanuel Oepura
-          </p>
-        </div>
+    <div className="py-20 bg-gray-50 dark:bg-gray-900 transition-colors duration-500 relative overflow-hidden">
+      {/* Decorative Background Element */}
+      <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
 
-        <div className="bg-white dark:bg-gray-700 rounded-xl shadow-lg overflow-hidden transition-colors duration-300">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
-            {/* Map */}
-            <div className="lg:col-span-2">
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+
+          {/* Text Content */}
+          <div className="order-2 lg:order-1">
+            <div className="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-widest text-amber-600 uppercase bg-amber-100 dark:bg-amber-900/20 rounded-full">
+              Lokasi & Kontak
+            </div>
+            <h2 className="font-serif text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+              Datang & Beribadah <br />
+              <span className="text-amber-500">Bersama Kami</span>
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed mb-8">
+              Kami menantikan kehadiran Anda. Gereja kami terletak strategis di Oesapa Barat, menjadi rumah doa bagi semua bangsa.
+            </p>
+
+            <div className="space-y-6">
+              <div className="flex items-start gap-4 p-4 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="bg-amber-100 dark:bg-amber-900/30 p-3 rounded-lg text-amber-600 dark:text-amber-400">
+                  <MapPin className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-900 dark:text-white">Alamat Lengkap</h4>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">
+                    Jln. Soverdi, Oesapa Barat, Kec. Kelapa Lima<br />
+                    Kota Kupang, Nusa Tenggara Timur
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4 p-4 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-lg text-blue-600 dark:text-blue-400">
+                  <Mail className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-900 dark:text-white">Hubungi Kami</h4>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">
+                    info@gmitjbob.org<br />
+                    (0380) 1234567
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Map Card */}
+          <div className="order-1 lg:order-2">
+            <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white dark:border-gray-800 ring-1 ring-gray-200 dark:ring-gray-700">
               <iframe
                 allowFullScreen=""
-                className="w-full h-64 lg:h-80"
-                height="300"
+                className="w-full h-[400px] lg:h-[500px]"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3794.4203793668125!2d123.62715267487363!3d-10.14984678996333!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2c56833a1bc16a89%3A0x562f5e0fe5a7835!2sGMIT%20Jemaat%20Betlehem%20Oesapa%20Barat!5e1!3m2!1sid!2sid"
                 style={{ border: 0 }}
-                width="600"
               />
-            </div>
 
-            {/* Address Info */}
-            <div className="p-8 flex flex-col justify-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-600 dark:to-gray-500">
-              <div className="text-center lg:text-left">
-                <div className="w-12 h-12 bg-blue-500 dark:bg-blue-600 rounded-full flex items-center justify-center mx-auto lg:mx-0 mb-4">
-                  <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path clipRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" fillRule="evenodd" />
-                  </svg>
+              {/* Floating Badge on Map */}
+              <div className="absolute bottom-6 left-6 right-6 p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md rounded-xl shadow-lg border border-white/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold text-amber-500 uppercase tracking-wider">Google Maps</p>
+                    <p className="font-bold text-gray-900 dark:text-white">GMIT Betlehem Oesapa Barat</p>
+                  </div>
+                  <a
+                    href="https://goo.gl/maps/XYZ"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-sm btn-circle btn-primary text-white"
+                  >
+                    <MapPin className="w-4 h-4" />
+                  </a>
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-3">Alamat Gereja</h3>
-                <p className="text-gray-600 dark:text-gray-200 leading-relaxed">
-                  Oesapa Barat<br />
-                  Kec. Kelapa Lima<br />
-                  Kota Kupang, NTT<br />
-                  <span className="font-medium">GMIT Betlehem Oesapa Barat</span>
-                </p>
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </div>
