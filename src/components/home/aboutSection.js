@@ -1,6 +1,6 @@
+import ScrollAnimation from "@/components/ui/animations/ScrollAnimation";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
 
 // Fetch SEJARAH content from API
 import kontenLandingPageService from "@/services/kontenLandingPageService";
@@ -32,8 +32,6 @@ const defaultHistory = [
 ];
 
 export default function AboutSection() {
-  const [isVisible, setIsVisible] = useState(false);
-  const sectionRef = useRef(null);
 
   // Fetch dynamic content
   const { data: historyResponse } = useQuery({
@@ -54,52 +52,16 @@ export default function AboutSection() {
     }))
     : defaultHistory;
 
-  useEffect(() => {
-    // Add fallback timeout to ensure content shows even if IntersectionObserver fails
-    const fallbackTimer = setTimeout(() => {
-      setIsVisible(true);
-    }, 500);
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          clearTimeout(fallbackTimer);
-        }
-      },
-      {
-        threshold: 0.1,
-        rootMargin: "50px 0px", // Trigger earlier
-      }
-    );
-
-    const element = sectionRef.current;
-
-    if (element) {
-      observer.observe(element);
-    }
-
-    return () => {
-      clearTimeout(fallbackTimer);
-      if (element) {
-        observer.unobserve(element);
-      }
-    };
-  }, []);
-
   return (
     <div
-      ref={sectionRef}
       className="py-16 lg:py-32 bg-white dark:bg-gray-950 transition-colors duration-500 overflow-hidden"
       id="about-section"
     >
       <div className="max-w-7xl mx-auto px-4 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
 
-          {/* Left - Content */}
-          <div
-            className={`lg:col-span-6 transition-all duration-1000 delay-300 ${isVisible ? "opacity-100 transform translate-x-0" : "opacity-0 transform -translate-x-8"}`}
-          >
+          {/* Left - Content - Slide In From Left (fade-right) */}
+          <ScrollAnimation variant="fade-right" className="lg:col-span-6">
             <div className="inline-block px-3 py-1 mb-6 text-xs font-bold tracking-widest text-amber-600 uppercase bg-amber-50 dark:bg-amber-900/20 rounded-full">
               Tentang Kami
             </div>
@@ -136,12 +98,10 @@ export default function AboutSection() {
                 </div>
               </Link>
             </div>
-          </div>
+          </ScrollAnimation>
 
-          {/* Right - Visual Arch */}
-          <div
-            className={`lg:col-span-6 transition-all duration-1000 delay-500 ${isVisible ? "opacity-100 transform translate-x-0" : "opacity-0 transform translate-x-8"}`}
-          >
+          {/* Right - Visual Arch - Slide In From Right (fade-left) */}
+          <ScrollAnimation variant="fade-left" delay={200} className="lg:col-span-6">
             <div className="relative mx-auto max-w-md lg:max-w-full">
               {/* Background pattern similar to Hero */}
               <div className="absolute inset-0 bg-amber-50 dark:bg-amber-900/20 rounded-t-[10rem] rounded-b-[2rem] transform rotate-3 scale-105 opacity-50" />
@@ -174,7 +134,7 @@ export default function AboutSection() {
                 </div>
               </div>
             </div>
-          </div>
+          </ScrollAnimation>
         </div>
       </div>
     </div>

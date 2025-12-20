@@ -1,227 +1,174 @@
-import Image from "next/image";
-import { useEffect, useState } from "react";
-
 import History from "@/components/about/history";
 import PageTitle from "@/components/ui/PageTitle";
+import { BookOpen, Heart, Users } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 
 export default function SejarahPage() {
   const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
-
     window.addEventListener("scroll", handleScroll);
-
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
-    <>
+    <div className="bg-white dark:bg-gray-950 transition-colors duration-500">
       <PageTitle
         description="Sejarah perjalanan GMIT Jemaat Betlehem Oesapa Barat dari masa ke masa. Mengenal jejak pelayanan dan perkembangan jemaat dalam melayani Tuhan dan sesama di Kupang, Nusa Tenggara Timur."
         title="Sejarah GMIT Betlehem Oesapa Barat"
         keywords="Sejarah GMIT Betlehem Oesapa Barat, Sejarah Gereja di Kupang, Perjalanan Gereja, Sejarah Jemaat, Gereja Masehi Injili di Timor, Misi Gereja, Sejarah JBOB"
       />
-      <div className="bg-gray-50">
-        {/* Hero Section with Parallax */}
-        <div className="relative h-screen flex justify-center items-center overflow-hidden">
-          <div
-            className="absolute inset-0 w-full h-full"
-            style={{ transform: `translateY(${scrollY * 0.5}px)` }}
-          >
-            <Image
-              alt="Sejarah GMIT Betlehem Oesapa Barat"
-              className="w-full h-full object-cover"
-              src="/header/malam.png"
-              fill
-              sizes="100vw"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
-          </div>
 
-          {/* Hero Content */}
-          <div className="relative z-10 text-center text-white px-4">
-            <div className="animate-fade-in-up">
-              <h1 className="text-4xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-yellow-200 to-orange-200 bg-clip-text text-transparent">
-                Sejarah Kami
-              </h1>
-              <div className="w-32 h-1 bg-gradient-to-r from-yellow-400 via-white to-orange-400 mx-auto mb-8 rounded-full" />
-              <p className="text-xl md:text-2xl max-w-4xl mx-auto leading-relaxed font-light">
-                Perjalanan panjang GMIT Betlehem Oesapa Barat dalam melayani dan
-                berkarya untuk kemuliaan Tuhan dan kebaikan sesama
-              </p>
-            </div>
-          </div>
-
-          {/* Scroll Indicator */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-            <div className="w-6 h-10 border-2 border-white rounded-full flex justify-center">
-              <div className="w-1 h-3 bg-white rounded-full mt-2 animate-pulse" />
-            </div>
-          </div>
+      {/* Elegant Arch Hero */}
+      <div className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        {/* Background Image with Arch Mask */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            fill
+            priority
+            alt="Background"
+            src="/header/malam.png"
+            className="object-cover opacity-30 dark:opacity-20 blur-sm"
+            style={{ transform: `translateY(${scrollY * 0.2}px)` }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-white via-white/80 to-white dark:from-gray-950 dark:via-gray-950/80 dark:to-gray-950" />
         </div>
 
-        {/* Introduction Section */}
-        <div className="py-20 px-4 bg-white">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="animate-fade-in-up">
-              <h2 className="text-3xl md:text-4xl font-bold mb-8 text-gray-800">
-                Warisan Iman Yang Berkelanjutan
-              </h2>
-              <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-8">
-                Lebih dari tujuh dekade, GMIT Betlehem Oesapa Barat telah menjadi saksi
-                perubahan zaman sambil tetap mempertahankan nilai-nilai iman
-                Kristen dan budaya lokal Timor. Setiap era membawa tantangan dan
-                berkat tersendiri, namun komitmen untuk melayani tetap menjadi
-                fondasi yang kokoh.
-              </p>
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8 border border-blue-100">
-                <blockquote className="text-2xl font-semibold text-blue-800 italic">
-                  "Kami tidak hanya mewarisi gedung dan tradisi, tetapi juga
-                  semangat melayani yang telah diteruskan dari generasi ke
-                  generasi."
-                </blockquote>
-                <p className="text-blue-600 mt-4">
-                  — Majelis GMIT Betlehem Oesapa Barat
-                </p>
-              </div>
-            </div>
-          </div>
+        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+          <span className="inline-block py-1 px-3 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-sm font-bold tracking-wider uppercase mb-4">
+            Warisan Iman
+          </span>
+          <h1 className="font-serif text-5xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-6">
+            Sejarah Perjalanan <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-amber-700">Iman Kami</span>
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 text-lg lg:text-xl font-light leading-relaxed">
+            Perjalanan panjang GMIT Betlehem Oesapa Barat dalam melayani dan berkarya untuk kemuliaan Tuhan dan kebaikan sesama.
+          </p>
         </div>
-
-        {/* Main History Timeline */}
-        <History />
-
-        {/* Legacy Section */}
-        <div className="py-20 px-4 bg-gradient-to-br from-amber-50 to-orange-50">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-amber-800">
-                Warisan Yang Kami Jaga
-              </h2>
-              <p className="text-lg text-amber-700 max-w-3xl mx-auto">
-                Nilai-nilai dan tradisi yang terus kami lestarikan untuk
-                generasi mendatang
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Tradisi Ibadah */}
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border border-amber-100">
-                <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mb-6 mx-auto">
-                  <svg
-                    className="w-8 h-8 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      clipRule="evenodd"
-                      d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                      fillRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-amber-800 mb-4 text-center">
-                  Tradisi Ibadah
-                </h3>
-                <p className="text-amber-700 text-center leading-relaxed">
-                  Liturgi dan tatacara ibadah yang memadukan unsur Reformed
-                  dengan kearifan lokal Timor, menciptakan pengalaman spiritual
-                  yang autentik dan bermakna.
-                </p>
-              </div>
-
-              {/* Budaya Lokal */}
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border border-amber-100">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mb-6 mx-auto">
-                  <svg
-                    className="w-8 h-8 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      clipRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
-                      fillRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-green-800 mb-4 text-center">
-                  Budaya Lokal
-                </h3>
-                <p className="text-green-700 text-center leading-relaxed">
-                  Pelestarian bahasa, adat istiadat, dan nilai-nilai budaya
-                  Timor yang diintegrasikan dengan ajaran Kristen dalam
-                  kehidupan sehari-hari jemaat.
-                </p>
-              </div>
-
-              {/* Pelayanan Sosial */}
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border border-amber-100">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center mb-6 mx-auto">
-                  <svg
-                    className="w-8 h-8 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      clipRule="evenodd"
-                      d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                      fillRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-blue-800 mb-4 text-center">
-                  Pelayanan Sosial
-                </h3>
-                <p className="text-blue-700 text-center leading-relaxed">
-                  Komitmen dalam melayani masyarakat melalui berbagai program
-                  sosial, pendidikan, dan pemberdayaan ekonomi yang
-                  berkelanjutan.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Call to Action */}
-        <div className="bg-gradient-to-r from-slate-800 to-blue-900 py-20 px-4 text-white">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Mari Menjadi Bagian dari Sejarah Ini
-            </h2>
-            <p className="text-lg md:text-xl mb-8 opacity-90">
-              Sejarah tidak berhenti di masa lalu. Anda bisa menjadi bagian dari
-              perjalanan iman dan pelayanan GMIT Betlehem Oesapa Barat ke depan.
-            </p>
-            <div className="space-y-4 md:space-y-0 md:space-x-4 md:flex md:justify-center">
-              <a
-                className="inline-block bg-white text-blue-900 font-semibold px-8 py-3 rounded-full hover:bg-gray-100 transform hover:scale-105 transition-all duration-300"
-                href="/tentang"
-              >
-                Pelajari Lebih Lanjut
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <style jsx>{`
-          @keyframes fade-in-up {
-            from {
-              opacity: 0;
-              transform: translateY(30px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          .animate-fade-in-up {
-            animation: fade-in-up 1s ease-out;
-          }
-        `}</style>
       </div>
-    </>
+
+      {/* Introduction Section */}
+      <div className="py-20 px-4 relative">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="font-serif text-3xl md:text-5xl font-bold mb-8 text-gray-900 dark:text-white">
+            Warisan Iman Yang Berkelanjutan
+          </h2>
+          <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed mb-12">
+            Lebih dari tujuh dekade, GMIT Betlehem Oesapa Barat telah menjadi saksi
+            perubahan zaman sambil tetap mempertahankan nilai-nilai iman
+            Kristen dan budaya lokal Timor. Setiap era membawa tantangan dan
+            berkat tersendiri, namun komitmen untuk melayani tetap menjadi
+            fondasi yang kokoh.
+          </p>
+
+          <div className="bg-amber-50 dark:bg-amber-900/10 rounded-[2rem] p-10 lg:p-14 border border-amber-100 dark:border-amber-900/30 relative overflow-hidden">
+            <div className="absolute top-0 left-0 text-[10rem] text-amber-500/10 font-serif leading-none -mt-10 -ml-10">“</div>
+            <blockquote className="relative z-10 text-2xl lg:text-3xl font-serif text-amber-900 dark:text-amber-100 italic">
+              "Kami tidak hanya mewarisi gedung dan tradisi, tetapi juga
+              semangat melayani yang telah diteruskan dari generasi ke
+              generasi."
+            </blockquote>
+            <p className="relative z-10 text-amber-600 dark:text-amber-400 font-bold mt-6 tracking-wide uppercase text-sm">
+              — Majelis GMIT Betlehem Oesapa Barat
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Main History Timeline */}
+      <History />
+
+      {/* Legacy Section (Arch Cards) */}
+      <div className="py-24 px-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-500">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <span className="block h-1 w-20 bg-amber-500 rounded-full mx-auto mb-6"></span>
+            <h2 className="font-serif text-4xl lg:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
+              Warisan Yang Kami Jaga
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+              Nilai-nilai dan tradisi yang terus kami lestarikan untuk generasi mendatang.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Tradisi Ibadah */}
+            <div className="bg-white dark:bg-gray-800 rounded-t-[4rem] rounded-b-2xl p-8 shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border border-gray-100 dark:border-gray-700 group text-center">
+              <div className="w-20 h-20 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mb-6 mx-auto group-hover:bg-amber-500 transition-colors duration-300">
+                <BookOpen className="w-8 h-8 text-amber-600 dark:text-amber-400 group-hover:text-white transition-colors duration-300" />
+              </div>
+              <h3 className="font-serif text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Tradisi Ibadah
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                Liturgi dan tatacara ibadah yang memadukan unsur Reformed
+                dengan kearifan lokal Timor, menciptakan pengalaman spiritual
+                yang autentik.
+              </p>
+            </div>
+
+            {/* Budaya Lokal */}
+            <div className="bg-white dark:bg-gray-800 rounded-t-[4rem] rounded-b-2xl p-8 shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border border-gray-100 dark:border-gray-700 group text-center mt-0 lg:-mt-8">
+              <div className="w-20 h-20 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mb-6 mx-auto group-hover:bg-amber-500 transition-colors duration-300">
+                <Users className="w-8 h-8 text-amber-600 dark:text-amber-400 group-hover:text-white transition-colors duration-300" />
+              </div>
+              <h3 className="font-serif text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Budaya Lokal
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                Pelestarian bahasa, adat istiadat, dan nilai-nilai budaya
+                Timor yang diintegrasikan dengan ajaran Kristen dalam
+                kehidupan sehari-hari.
+              </p>
+            </div>
+
+            {/* Pelayanan Sosial */}
+            <div className="bg-white dark:bg-gray-800 rounded-t-[4rem] rounded-b-2xl p-8 shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border border-gray-100 dark:border-gray-700 group text-center">
+              <div className="w-20 h-20 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mb-6 mx-auto group-hover:bg-amber-500 transition-colors duration-300">
+                <Heart className="w-8 h-8 text-amber-600 dark:text-amber-400 group-hover:text-white transition-colors duration-300" />
+              </div>
+              <h3 className="font-serif text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Pelayanan Sosial
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                Komitmen dalam melayani masyarakat melalui berbagai program
+                sosial, pendidikan, dan pemberdayaan ekonomi yang
+                berkelanjutan.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Call to Action */}
+      <div className="relative py-24 px-4 overflow-hidden">
+        <div className="absolute inset-0 bg-gray-900 dark:bg-black">
+          <Image
+            fill
+            alt="Community"
+            src="/header/sore3.png"
+            className="object-cover opacity-20"
+          />
+        </div>
+        <div className="relative z-10 max-w-4xl mx-auto text-center text-white">
+          <h2 className="font-serif text-3xl md:text-5xl font-bold mb-6">
+            Mari Menjadi Bagian dari Sejarah Ini
+          </h2>
+          <p className="text-lg md:text-xl mb-10 text-gray-300 max-w-2xl mx-auto">
+            Sejarah tidak berhenti di masa lalu. Anda bisa menjadi bagian dari
+            perjalanan iman dan pelayanan GMIT Betlehem Oesapa Barat ke depan.
+          </p>
+          <a
+            className="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-gray-900 transition-all duration-200 bg-amber-500 border border-transparent rounded-full hover:bg-amber-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+            href="/tentang"
+          >
+            Pelajari Lebih Lanjut
+          </a>
+        </div>
+      </div>
+    </div>
   );
 }

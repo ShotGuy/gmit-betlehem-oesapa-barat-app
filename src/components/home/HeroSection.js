@@ -1,7 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function HeroSection() {
+    const [scrollY, setScrollY] = useState(0);
+
+    useEffect(() => {
+        const handleScroll = () => setScrollY(window.scrollY);
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
     return (
         <div className="relative bg-white dark:bg-gray-950 overflow-hidden transition-colors duration-500">
             {/* Background Decoration - More symmetric/halo like */}
@@ -57,6 +66,7 @@ export default function HeroSection() {
                                     alt="Suasana Gereja"
                                     fill
                                     className="object-cover group-hover:scale-110 transition-transform duration-[1.5s] ease-in-out"
+                                    style={{ transform: `translateY(${scrollY * 0.05}px) scale(1.1)` }}
                                     priority
                                     sizes="(min-width: 1024px) 50vw, 100vw"
                                 />

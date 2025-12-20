@@ -786,6 +786,11 @@ model ProfilPendeta {
   nama    String  @db.VarChar(100) // Nama lengkap pendeta
   urlFoto String? @db.Text // URL foto di AWS S3
   s3Key   String? @db.Text // S3 key untuk delete file
+  
+  // New Fields requested by user
+  status  String? @db.VarChar(100) // e.g. "Ketua Majelis", "Pendeta Jemaat"
+  periode String? @db.VarChar(50)  // e.g. "2020 - Sekarang"
+  quote   String? @db.Text         // Kutipan inspiratif
 
   // Status dan visibility
   isActive Boolean @default(true) @map("is_active")

@@ -31,7 +31,7 @@ export default function Navbar({
         {menuItems.map((item) => (
           <li key={item.name} className="flex items-center">
             <a
-              className="flex items-center text-white hover:text-blue-200 dark:hover:text-blue-300 transition-colors duration-200"
+              className="flex items-center hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-200"
               href={item.path}
             >
               {item.name}
@@ -41,7 +41,7 @@ export default function Navbar({
         {/* UPP Dropdown */}
         <li className="flex items-center">
           <details className="flex items-center">
-            <summary className="btn btn-ghost flex items-center px-4 py-2 text-white hover:text-blue-200 dark:hover:text-blue-300 hover:bg-white/10 dark:hover:bg-white/20 transition-all duration-200">
+            <summary className="btn btn-ghost flex items-center px-4 py-2 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-white/10 dark:hover:bg-white/20 transition-all duration-200">
               <FileText className="w-4 h-4 mr-2" />
               UPP
               {/* <ChevronDown className="w-4 h-4 ml-2" /> */}

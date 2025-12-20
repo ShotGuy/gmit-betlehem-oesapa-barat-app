@@ -1,43 +1,34 @@
-import { Award, User } from "lucide-react";
+import PageTitle from "@/components/ui/PageTitle";
+import { Quote, User } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-
-import PageTitle from "@/components/ui/PageTitle";
 
 export default function ProfilPendetaPage() {
   const [scrollY, setScrollY] = useState(0);
   const [profiles, setProfiles] = useState([]);
-  const [activeProfile, setActiveProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
-
     window.addEventListener("scroll", handleScroll);
-
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
     const fetchProfiles = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
+        const response = await fetch("/api/public/profil-pendeta");
+        const result = await response.json();
 
-        // Fetch all profiles
-        const allProfilesResponse = await fetch("/api/public/profil-pendeta");
-        const allProfilesData = await allProfilesResponse.json();
-
-        if (allProfilesData.success && Array.isArray(allProfilesData.data)) {
-          setProfiles(allProfilesData.data);
-
-          // Find active profile from the array
-          const active = allProfilesData.data.find(profile => profile.isActive === true);
-          if (active) {
-            setActiveProfile(active);
-          }
+        if (result.success && result.data.length > 0) {
+          setProfiles(result.data);
+        } else {
+          setProfiles([]);
         }
-      } catch (error) {
-        console.error("Error fetching pastor profiles:", error);
+      } catch (err) {
+        console.error("Error fetching profiles:", err);
+        setProfiles([]);
       } finally {
         setLoading(false);
       }
@@ -46,142 +37,123 @@ export default function ProfilPendetaPage() {
     fetchProfiles();
   }, []);
 
-  if (loading) {
-    return (
-      <>
-        <PageTitle
-          description="Profil pendeta dan pelayan gereja GMIT Jemaat Imanuel Oepura yang melayani dengan dedikasi tinggi."
-          title="Profil Pendeta"
-        />
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto" />
-            <p className="mt-4 text-gray-600">Memuat profil pendeta...</p>
-          </div>
-        </div>
-      </>
-    );
-  }
-
   return (
-    <>
+    <div className="bg-white dark:bg-gray-950 transition-colors duration-500">
       <PageTitle
-        description="Profil pendeta dan pelayan gereja GMIT Jemaat Imanuel Oepura yang melayani dengan dedikasi tinggi di Kupang, Nusa Tenggara Timur."
-        keywords="Profil Pendeta, Pendeta GMIT, Pendeta Gereja, Pelayan Gereja, Pendeta Kupang, Gereja Masehi Injili, Pelayan JIO"
-        title="Profil Pendeta GMIT Imanuel Oepura"
+        description="Profil pendeta dan pelayan gereja GMIT Jemaat Betlehem Oesapa Barat yang melayani dengan dedikasi tinggi."
+        title="Profil Pendeta GMIT Betlehem Oesapa Barat"
+        keywords="Profil Pendeta, Pendeta GMIT, Pendeta Gereja, Pelayan Gereja, Pendeta Kupang"
       />
 
-      <div className="bg-gray-50 min-h-screen">
-        {/* Hero Section with Parallax */}
-        <div className="relative h-96 flex justify-center items-center overflow-hidden bg-gradient-to-r from-blue-600 to-blue-800">
-          <div
-            className="absolute inset-0 w-full h-full opacity-20"
-            style={{ transform: `translateY(${scrollY * 0.3}px)` }}
-          >
-            <div className="w-full h-full bg-pattern" />
-          </div>
-
-          <div className="relative z-10 text-center text-white">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4">
-              Profil Pendeta
-            </h1>
-            <p className="text-xl md:text-2xl max-w-2xl mx-auto px-4">
-              Pelayan Tuhan yang Membimbing Jemaat
-            </p>
-          </div>
+      {/* Elegant Arch Hero */}
+      <div className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        {/* Background Image with Arch Mask */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            fill
+            priority
+            alt="Background"
+            src="/header/malam.png"
+            className="object-cover opacity-30 dark:opacity-20 blur-sm"
+            style={{ transform: `translateY(${scrollY * 0.2}px)` }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-white via-white/80 to-white dark:from-gray-950 dark:via-gray-950/80 dark:to-gray-950" />
         </div>
 
-        {/* Active Pastors Section */}
-        {profiles.filter(p => p.isActive).length > 0 && (
-          <div className="py-16 px-4 bg-white">
-            <div className="max-w-6xl mx-auto">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-                  Para Pendeta
-                </h2>
-                <div className="w-24 h-1 bg-blue-600 mx-auto mb-4" />
-                <p className="text-gray-600 max-w-2xl mx-auto">
-                  Profil lengkap para pendeta yang pernah dan sedang melayani di GMIT Jemaat Imanuel Oepura
-                </p>
-              </div>
-
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {profiles.filter(profile => profile.isActive).map((profile) => (
-                  <div
-                    key={profile.id}
-                    className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border-2 border-blue-500"
-                  >
-                    <div className="bg-blue-500 text-white text-center py-2 text-sm font-medium">
-                      Aktif Melayani
-                    </div>
-
-                    <div className="p-6">
-                      <div className="text-center mb-4">
-                        {profile.urlFoto ? (
-                          <Image
-                            alt={profile.nama}
-                            className="w-24 h-24 object-cover rounded-full mx-auto shadow-md border-2 border-gray-200"
-                            height={96}
-                            src={profile.urlFoto}
-                            style={{ objectFit: 'cover' }}
-                            width={96}
-                          />
-                        ) : (
-                          <div className="w-24 h-24 bg-gray-300 rounded-full mx-auto flex items-center justify-center shadow-md border-2 border-gray-200">
-                            <User className="w-10 h-10 text-gray-500" />
-                          </div>
-                        )}
-                      </div>
-
-                      <h3 className="text-xl font-bold text-gray-800 text-center mb-2">
-                        {profile.nama}
-                      </h3>
-
-                      <p className="text-blue-600 font-medium text-center mb-4">
-                        Pendeta GMIT
-                      </p>
-
-                      <div className="text-center">
-                        <p className="text-gray-600 text-sm leading-relaxed">
-                          Melayani dengan dedikasi di GMIT Jemaat Imanuel Oepura
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {profiles.length === 0 && !loading && (
-          <div className="py-16 px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <div className="bg-white rounded-xl shadow-lg p-12">
-                <User className="w-24 h-24 text-gray-400 mx-auto mb-6" />
-                <h3 className="text-2xl font-bold text-gray-800 mb-4">
-                  Belum Ada Profil Pendeta
-                </h3>
-                <p className="text-gray-600">
-                  Informasi profil pendeta akan segera ditambahkan.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+          <span className="inline-block py-1 px-3 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-sm font-bold tracking-wider uppercase mb-4">
+            Gembala & Pelayan
+          </span>
+          <h1 className="font-serif text-5xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-6">
+            Profil <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-amber-700">Pendeta</span>
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 text-lg lg:text-xl font-light leading-relaxed">
+            Mengenal lebih dekat para hamba Tuhan yang mendedikasikan hidupnya untuk melayani jemaat GMIT Betlehem Oesapa Barat.
+          </p>
+        </div>
       </div>
 
-      <style jsx>{`
-        .bg-pattern {
-          background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M30 30c0-11.046-8.954-20-20-20s-20 8.954-20 20 8.954 20 20 20 20-8.954 20-20zm0 0c0 11.046 8.954 20 20 20s20-8.954 20-20-8.954-20-20-20-20 8.954-20 20z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        }
-        .line-clamp-3 {
-          display: -webkit-box;
-          -webkit-line-clamp: 3;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-      `}</style>
-    </>
+      <div className="py-20 px-4 min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <div className="loading loading-lg text-amber-500" />
+            </div>
+          ) : profiles.length > 0 ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
+              {profiles.map((profile) => (
+                <div key={profile.id} className="group relative">
+                  {/* Decorative Arch Background */}
+                  <div className="absolute inset-0 bg-gray-50 dark:bg-gray-900 rounded-t-[10rem] rounded-b-3xl transform group-hover:scale-105 transition-transform duration-500 shadow-lg border border-gray-100 dark:border-gray-800" />
+
+                  <div className="relative p-6 flex flex-col items-center text-center">
+
+                    {/* Image Container */}
+                    <div className="relative w-48 h-64 mb-6 rounded-t-[5rem] rounded-b-3xl overflow-hidden shadow-xl border-4 border-white dark:border-gray-800">
+                      {profile.urlFoto ? (
+                        <Image
+                          src={profile.urlFoto}
+                          alt={profile.nama}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+                          <User className="w-16 h-16 text-gray-400" />
+                        </div>
+                      )}
+
+                      {/* Status Badge */}
+                      {profile.isActive && (
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-green-500/90 backdrop-blur-sm text-white text-[10px] uppercase font-bold px-3 py-1 rounded-full shadow-sm tracking-wide">
+                          Aktif
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="space-y-3">
+                      <h3 className="font-serif text-2xl font-bold text-gray-900 dark:text-white leading-tight">
+                        {profile.nama}
+                      </h3>
+                      <p className="text-amber-600 dark:text-amber-500 font-bold text-sm uppercase tracking-wider">
+                        {profile.status || "Pendeta Jemaat"}
+                      </p>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">
+                        {profile.periode}
+                      </p>
+
+                      {/* Quote Section */}
+                      {profile.quote && (
+                        <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800 relative">
+                          <Quote className="w-4 h-4 text-amber-300 absolute -top-2 left-1/2 -translate-x-1/2 fill-current" />
+                          <p className="text-gray-600 dark:text-gray-300 italic text-sm leading-relaxed">
+                            "{profile.quote}"
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            // Empty State
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6">
+                <User className="w-10 h-10 text-gray-400 dark:text-gray-500" />
+              </div>
+              <h3 className="text-xl font-serif font-bold text-gray-900 dark:text-white mb-2">
+                Belum Ada Data Pendeta
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 max-w-md">
+                Data profil pendeta belum tersedia di database.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

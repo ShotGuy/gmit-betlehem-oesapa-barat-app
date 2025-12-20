@@ -1,105 +1,127 @@
+import { Calendar, ChevronLeft, ChevronRight, Images as ImageIcon } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function GalleryImage({ galleryItem }) {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
-  // Parse fotos if it's a string
-  let fotos;
-  if (typeof galleryItem.fotos === 'string') {
-    try {
-      fotos = JSON.parse(galleryItem.fotos);
-    } catch (e) {
-      console.error("Failed to parse galleryItem.fotos:", e);
-      fotos = [];
-    }
-  } else {
-    fotos = galleryItem.fotos;
-  }
+  const [isHovered, setIsHovered] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Format the date
+  // 1. Data Mapping (Support DB fields & Fallbacks)
+  const title = galleryItem.namaKegiatan || galleryItem.title || "Kegiatan Gereja";
+  const rawDate = galleryItem.tanggalKegiatan || galleryItem.date;
+  const description = galleryItem.deskripsi || galleryItem.description || "";
+
+  // Format Date
   const formatDate = (dateString) => {
+    if (!dateString) return "Jadwal Rutin";
     return new Date(dateString).toLocaleDateString('id-ID', {
-      year: 'numeric',
+      day: 'numeric',
       month: 'long',
-      day: 'numeric'
+      year: 'numeric'
     });
   };
+  const displayDate = rawDate ? formatDate(rawDate) : null;
 
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % fotos.length);
-  };
-
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + fotos.length) % fotos.length);
-  };
-
-  const goToImage = (index) => {
-    setCurrentImageIndex(index);
-  };
-
-  if (!fotos || fotos.length === 0) {
-    return <div>No images available</div>;
+  // 2. Image Parsing
+  let images = [];
+  if (galleryItem.fotos) {
+    if (Array.isArray(galleryItem.fotos)) {
+      images = galleryItem.fotos;
+    } else if (typeof galleryItem.fotos === 'string') {
+      try {
+        images = JSON.parse(galleryItem.fotos);
+      } catch (e) {
+        console.error("Error parsing fotos:", e);
+        images = [];
+      }
+    }
   }
 
+  if (images.length === 0 && galleryItem.url) {
+    images = [{ url: galleryItem.url }];
+  }
+
+  if (images.length === 0) return null;
+
+  const handleNext = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setCurrentIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const handlePrev = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const currentImage = images[currentIndex];
+
   return (
-    <div className="relative bg-white rounded-lg shadow-lg overflow-hidden">
+    <div
+      className="relative break-inside-avoid mb-6 group rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 bg-gray-100 dark:bg-gray-800"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       {/* Image Container */}
-      <div className="relative h-64 md:h-80 lg:h-96">
-        <img 
-          alt={fotos[currentImageIndex].originalName || 'gallery image'} 
-          className="object-cover w-full h-full" 
-          src={fotos[currentImageIndex].url}
+      <div className="relative w-full aspect-[4/3] md:aspect-auto">
+        <Image
+          src={currentImage.url}
+          alt={title}
+          width={500}
+          height={500}
+          className="w-full h-auto object-cover transform transition-transform duration-700 ease-out"
         />
-        
-        {/* Navigation Arrows */}
-        {fotos.length > 1 && (
+
+        {/* Multi-Image Badge */}
+        {images.length > 1 && (
+          <div className="absolute top-3 left-3 bg-black/50 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1.5 z-20">
+            <ImageIcon className="w-3 h-3 text-white" />
+            <span className="text-xs font-bold text-white">{currentIndex + 1}/{images.length}</span>
+          </div>
+        )}
+
+        {/* Carousel Arrows */}
+        {images.length > 1 && (
           <>
             <button
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
-              onClick={prevImage}
+              onClick={handlePrev}
+              className={`absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-md text-white transition-all duration-300 ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}
             >
-              <ChevronLeft size={20} />
+              <ChevronLeft className="w-5 h-5" />
             </button>
             <button
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
-              onClick={nextImage}
+              onClick={handleNext}
+              className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-md text-white transition-all duration-300 ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}
             >
-              <ChevronRight size={20} />
+              <ChevronRight className="w-5 h-5" />
             </button>
           </>
         )}
 
-        {/* Image Counter */}
-        {fotos.length > 1 && (
-          <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-sm">
-            {currentImageIndex + 1} / {fotos.length}
+        {/* Overlay Content */}
+        <div className={`absolute inset-0 bg-gradient-to-t from-gray-900/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 pointer-events-none`}>
+          <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+            {/* 1. Date (Top) */}
+            {displayDate && (
+              <span className="inline-flex items-center gap-1.5 px-2 py-1 mb-2 text-xs font-bold text-amber-500 bg-amber-950/30 border border-amber-500/20 rounded-full tracking-wider backdrop-blur-sm">
+                <Calendar className="w-3 h-3" />
+                {displayDate}
+              </span>
+            )}
+
+            {/* 2. Event Name (Middle) */}
+            <h3 className="font-serif text-lg font-bold text-white leading-tight mb-1">
+              {title}
+            </h3>
+
+            {/* 3. Description (Bottom) */}
+            {description && (
+              <p className="text-gray-300 text-sm line-clamp-2">
+                {description}
+              </p>
+            )}
           </div>
-        )}
-      </div>
-
-      {/* Dots Indicator */}
-      {fotos.length > 1 && (
-        <div className="flex justify-center space-x-2 py-3 bg-gray-100">
-          {fotos.map((_, index) => (
-            <button
-              key={index}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                index === currentImageIndex ? 'bg-blue-500' : 'bg-gray-300'
-              }`}
-              onClick={() => goToImage(index)}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Event Information */}
-      <div className="p-4">
-        <h2 className="text-xl font-bold text-gray-800 mb-2">{galleryItem.namaKegiatan}</h2>
-        <p className="text-sm text-gray-600 mb-2">{galleryItem.deskripsi}</p>
-        <div className="flex justify-between items-center text-sm text-gray-500">
-          <span>{galleryItem.tempat}</span>
-          <span>{formatDate(galleryItem.tanggalKegiatan)}</span>
         </div>
       </div>
     </div>

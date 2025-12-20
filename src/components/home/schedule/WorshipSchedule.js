@@ -65,10 +65,10 @@ export default function WorshipSchedule() {
                             <div className="h-px bg-gray-200 dark:bg-gray-800 flex-1"></div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {sundaySchedules.map((schedule) => (
-                                <div key={schedule.id} className="h-full">
+                            {sundaySchedules.map((schedule, index) => (
+                                <ScrollAnimation key={schedule.id} delay={index * 100} className="h-full" variant="fade-up">
                                     <ScheduleCard {...schedule} category="sunday" />
-                                </div>
+                                </ScrollAnimation>
                             ))}
                         </div>
                     </div>
@@ -82,10 +82,10 @@ export default function WorshipSchedule() {
                             <div className="h-px bg-gray-200 dark:bg-gray-800 flex-1"></div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {secondarySchedules.map((schedule) => (
-                                <div key={schedule.id} className="h-full">
+                            {secondarySchedules.map((schedule, index) => (
+                                <ScrollAnimation key={schedule.id} delay={index * 50} className="h-full" variant="fade-up">
                                     <ScheduleCard {...schedule} category="family" />
-                                </div>
+                                </ScrollAnimation>
                             ))}
                         </div>
                     </div>

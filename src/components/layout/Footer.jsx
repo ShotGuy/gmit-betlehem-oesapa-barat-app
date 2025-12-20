@@ -16,7 +16,7 @@ export default function Footer() {
             <div className="flex items-center gap-3 mb-6">
               <div className="relative w-12 h-12">
                 <Image
-                  src="/logo-dark.png" // Always use dark mode logo style for dark footer, or keep dynamic if needed. Assuming white text logo for dark bg.
+                  src="/logo-GMIT.png"
                   alt="Logo GMIT"
                   fill
                   className="object-contain"
