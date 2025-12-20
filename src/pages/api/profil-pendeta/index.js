@@ -124,7 +124,7 @@ async function handlePost(req, res) {
     // Run multer middleware
     await runMiddleware(req, res, upload.single("foto"));
 
-    const { nama } = req.body;
+    const { nama, status, periode, quote } = req.body;
     const file = req.file;
 
     if (!nama) {
@@ -166,6 +166,9 @@ async function handlePost(req, res) {
     const newProfile = await prisma.profilPendeta.create({
       data: {
         nama,
+        status,
+        periode,
+        quote,
         urlFoto,
         s3Key,
         isActive: true,

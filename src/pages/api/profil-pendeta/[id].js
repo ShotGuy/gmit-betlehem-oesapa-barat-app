@@ -1,10 +1,10 @@
 import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
 
+import { apiResponse } from "@/lib/apiHelper";
 import { requireAuth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { uploadFileToS3, deleteFileFromS3 } from "@/lib/s3";
-import { apiResponse } from "@/lib/apiHelper";
+import { deleteFileFromS3, uploadFileToS3 } from "@/lib/s3";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -84,7 +84,7 @@ async function handlePatch(req, res) {
     await runMiddleware(req, res, upload.single("foto"));
 
     const { id } = req.query;
-    const { nama } = req.body;
+    const { nama, status, periode, quote } = req.body;
     const file = req.file;
 
     // Check if profile exists
@@ -102,10 +102,11 @@ async function handlePatch(req, res) {
       updatedBy: user.id,
     };
 
-    // Update name if provided
-    if (nama) {
-      updateData.nama = nama;
-    }
+    // Update fields if provided
+    if (nama) updateData.nama = nama;
+    if (status !== undefined) updateData.status = status;
+    if (periode !== undefined) updateData.periode = periode;
+    if (quote !== undefined) updateData.quote = quote;
 
     // Handle photo update
     if (file) {

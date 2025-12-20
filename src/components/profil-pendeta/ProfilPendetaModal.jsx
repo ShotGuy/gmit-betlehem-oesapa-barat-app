@@ -14,6 +14,9 @@ const ProfilPendetaModal = ({
 }) => {
   const [formData, setFormData] = useState({
     nama: "",
+    status: "", // New field e.g. "Ketua Majelis"
+    periode: "", // New field e.g. "2024-2028"
+    quote: "", // New field
     foto: null,
   });
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -27,11 +30,14 @@ const ProfilPendetaModal = ({
       if (mode === "edit" && profile) {
         setFormData({
           nama: profile.nama || "",
+          status: profile.status || "",
+          periode: profile.periode || "",
+          quote: profile.quote || "",
           foto: null,
         });
         setPreviewUrl(profile.urlFoto || null);
       } else {
-        setFormData({ nama: "", foto: null });
+        setFormData({ nama: "", status: "", periode: "", quote: "", foto: null });
         setPreviewUrl(null);
       }
       setError("");
@@ -43,6 +49,10 @@ const ProfilPendetaModal = ({
       const formDataToSend = new FormData();
 
       formDataToSend.append("nama", data.nama);
+      // Append new fields
+      if (data.status) formDataToSend.append("status", data.status);
+      if (data.periode) formDataToSend.append("periode", data.periode);
+      if (data.quote) formDataToSend.append("quote", data.quote);
 
       if (data.foto) {
         formDataToSend.append("foto", data.foto);
@@ -73,9 +83,7 @@ const ProfilPendetaModal = ({
     },
     onError: (error) => {
       const message = error.response?.data?.message || "Terjadi kesalahan";
-
       setError(message);
-
       showToast({
         title: "Gagal",
         description: message,
@@ -87,24 +95,19 @@ const ProfilPendetaModal = ({
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
-
     setError("");
-
     if (!file) return;
 
     // Validate file type
     const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
-
     if (!allowedTypes.includes(file.type)) {
       setError("Tipe file harus PNG, JPG, atau JPEG");
-
       return;
     }
 
     // Validate file size (2MB)
     if (file.size > 2 * 1024 * 1024) {
       setError("Ukuran file maksimal 2MB");
-
       return;
     }
 
@@ -112,7 +115,6 @@ const ProfilPendetaModal = ({
 
     // Create preview URL
     const reader = new FileReader();
-
     reader.onload = (e) => setPreviewUrl(e.target.result);
     reader.readAsDataURL(file);
   };
@@ -122,13 +124,11 @@ const ProfilPendetaModal = ({
 
     if (!formData.nama.trim()) {
       setError("Nama pendeta harus diisi");
-
       return;
     }
 
     if (mode === "create" && !formData.foto) {
       setError("Foto pendeta harus diupload");
-
       return;
     }
 
@@ -136,7 +136,7 @@ const ProfilPendetaModal = ({
   };
 
   const handleClose = () => {
-    setFormData({ nama: "", foto: null });
+    setFormData({ nama: "", status: "", periode: "", quote: "", foto: null });
     setPreviewUrl(null);
     setError("");
     onClose();
@@ -179,8 +179,55 @@ const ProfilPendetaModal = ({
               placeholder="Masukkan nama lengkap pendeta"
               type="text"
               value={formData.nama}
+              onChange={(value) =>
+                setFormData((prev) => ({ ...prev, nama: value }))
+              }
+            />
+          </div>
+
+          {/* Jabatan / Status */}
+          <div>
+            <TextInput
+              label="Jabatan / Status"
+              disabled={mutation.isPending}
+              maxLength={100}
+              placeholder="Contoh: Ketua Majelis Jemaat"
+              type="text"
+              value={formData.status}
+              onChange={(value) =>
+                setFormData((prev) => ({ ...prev, status: value }))
+              }
+            />
+          </div>
+
+          {/* Periode */}
+          <div>
+            <TextInput
+              label="Periode Pelayanan"
+              disabled={mutation.isPending}
+              maxLength={50}
+              placeholder="Contoh: 2024 - 2028"
+              type="text"
+              value={formData.periode}
+              onChange={(value) =>
+                setFormData((prev) => ({ ...prev, periode: value }))
+              }
+            />
+          </div>
+
+          {/* Quote */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Kutipan / Motto
+            </label>
+            <textarea
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors resize-none"
+              disabled={mutation.isPending}
+              rows={3}
+              placeholder="Masukkan kutipan ayat atau motto pelayanan..."
+              value={formData.quote}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, nama: e.target.value }))
+                setFormData((prev) => ({ ...prev, quote: e.target.value }))
               }
             />
           </div>

@@ -18,7 +18,7 @@ export default function ProfilPendetaPage() {
     const fetchProfiles = async () => {
       setLoading(true);
       try {
-        const response = await fetch("/api/public/profil-pendeta");
+        const response = await fetch("/api/public/profil-pendeta?active=true");
         const result = await response.json();
 
         if (result.success && result.data.length > 0) {
@@ -103,12 +103,7 @@ export default function ProfilPendetaPage() {
                         </div>
                       )}
 
-                      {/* Status Badge */}
-                      {profile.isActive && (
-                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-green-500/90 backdrop-blur-sm text-white text-[10px] uppercase font-bold px-3 py-1 rounded-full shadow-sm tracking-wide">
-                          Aktif
-                        </div>
-                      )}
+
                     </div>
 
                     {/* Content */}

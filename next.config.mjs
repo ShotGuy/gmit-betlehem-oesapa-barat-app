@@ -8,7 +8,7 @@ const nextConfig = {
         protocol: 'https',
         hostname: 's3.nevaobjects.id',
         port: '',
-        pathname: '/files-bucket/**',
+        pathname: '/**',
       },
     ],
   },

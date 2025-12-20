@@ -34,24 +34,45 @@ export default function NewsRow() {
   }, []);
 
   return (
-    <div className="py-20 lg:py-28 bg-gray-50 dark:bg-gray-900 transition-colors duration-500">
-      <div className="max-w-7xl mx-auto px-4 lg:px-8">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-end mb-12">
-          <div>
-            <div className="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-widest text-amber-600 uppercase bg-amber-100 dark:bg-amber-900/20 rounded-full">
-              Warta & Berita
-            </div>
-            <h2 className="font-serif text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white">
-              Kabar Jemaat
-            </h2>
+    <div className="relative py-24 lg:py-32 bg-gray-50 dark:bg-gray-900 overflow-hidden">
+
+      {/* Background Decor: Subtle Pattern */}
+      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none"
+        style={{ backgroundImage: 'radial-gradient(#d97706 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
+      </div>
+
+      {/* Background Decor: Soft Gradient Glows */}
+      <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-white to-transparent dark:from-gray-900 dark:to-transparent z-10" />
+      <div className="absolute bottom-0 left-0 w-full h-64 bg-gradient-to-t from-white to-transparent dark:from-gray-900 dark:to-transparent z-10" />
+
+      {/* Background Decor: Large Blur Blobs */}
+      <div className="absolute top-20 -left-20 w-96 h-96 bg-amber-200/20 dark:bg-amber-700/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-20 -right-20 w-96 h-96 bg-blue-200/20 dark:bg-blue-700/10 rounded-full blur-3xl" />
+
+      <div className="relative z-20 max-w-7xl mx-auto px-4 lg:px-8">
+        {/* Premium Header - Centered & Grand */}
+        <div className="text-center max-w-3xl mx-auto mb-20">
+          <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 mb-6 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-amber-100 dark:border-amber-900/30 shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+            <span className="text-xs font-bold tracking-widest text-amber-600 dark:text-amber-500 uppercase">
+              Warta Jemaat
+            </span>
           </div>
 
-          <div className="hidden md:block">
-            <p className="text-gray-500 dark:text-gray-400 max-w-sm text-right">
-              Ikuti perkembangan terkini dan informasi penting seputar pelayanan gereja.
-            </p>
-          </div>
+          <h2 className="font-serif text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
+            Informasi & <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-amber-500 relative inline-block">
+              Pelayanan
+              {/* Underline Decoration */}
+              <svg className="absolute -bottom-2 left-0 w-full h-3 text-amber-200 dark:text-amber-800/50 -z-10" viewBox="0 0 100 10" preserveAspectRatio="none">
+                <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="3" fill="none" />
+              </svg>
+            </span>
+          </h2>
+
+          <p className="text-lg text-gray-600 dark:text-gray-300 font-light leading-relaxed">
+            Tetap terhubung dengan kegiatan dan berita terbaru dari Jemaat Betlehem Oesapa Barat.
+            Informasi yang transparan untuk pelayanan yang lebih baik.
+          </p>
         </div>
 
         {/* Content */}
