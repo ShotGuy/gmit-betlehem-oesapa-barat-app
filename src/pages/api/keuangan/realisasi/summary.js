@@ -82,12 +82,18 @@ async function handleGet(req, res) {
       _sum: {
         totalRealisasi: true,
       },
+      _count: {
+        id: true,
+      }
     });
 
     // Create Map for fast lookup
     const realisasiMap = new Map();
     realisasiSums.forEach(r => {
-      realisasiMap.set(r.itemKeuanganId, Number(r._sum.totalRealisasi || 0));
+      realisasiMap.set(r.itemKeuanganId, {
+        sum: Number(r._sum.totalRealisasi || 0),
+        count: r._count.id || 0
+      });
     });
 
     // --- 3. Build Tree & Calculate Aggregates (Bottom-Up) ---
@@ -96,12 +102,14 @@ async function handleGet(req, res) {
     // Initialize Map with Direct Data
     items.forEach(item => {
       // Get direct realization from transactions (or 0 if none)
-      const directRealisasi = realisasiMap.get(item.id) || 0;
+      const realisasiData = realisasiMap.get(item.id) || { sum: 0, count: 0 };
+      const directRealisasi = realisasiData.sum;
 
       itemMap.set(item.id, {
         ...item,
         children: [],
         directRealisasi: directRealisasi, // Source of Truth
+        jumlahRealisasi: realisasiData.count, // Direct transaction count
         aggregatedRealisasi: directRealisasi, // Start with own, add children later
 
         // Target Logic
@@ -181,7 +189,7 @@ async function handleGet(req, res) {
         achievementPercentage: Math.round(variancePercentage * 100) / 100,
 
         // Extras
-        jumlahRealisasi: item.realisasiItemKeuangan.length, // Direct count
+        jumlahRealisasi: item.jumlahRealisasi || 0, // Direct count from map
         hasChildren: item.hasChildren
       };
     });
