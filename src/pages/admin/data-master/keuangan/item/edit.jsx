@@ -582,15 +582,48 @@ export default function EditItemKeuanganPage() {
     }
   };
 
+  // Helper: Recalculate targets from bottom up
+  const calculateTreeTargets = (itemList) => {
+    return itemList.map((item) => {
+      // 1. Process children first (Recursion)
+      let updatedChildren = [];
+      if (item.children && item.children.length > 0) {
+        updatedChildren = calculateTreeTargets(item.children);
+      }
+
+      // 2. Calculate own target
+      let newItem = { ...item, children: updatedChildren };
+
+      if (updatedChildren.length > 0) {
+        // If has children, Total Target = Sum of Children's Total Target
+        const sumChildren = updatedChildren.reduce((sum, child) => {
+          return sum + (parseFloat(child.totalTarget) || 0);
+        }, 0);
+
+        newItem.totalTarget = sumChildren.toString();
+        // Clear manual inputs for parent to avoid confusion
+        newItem.targetFrekuensi = "";
+        newItem.nominalSatuan = "";
+      } else {
+        // If leaf (no children), ensure totalTarget respects the manual formula if fields exist
+      }
+
+      return newItem;
+    });
+  };
+
   // Update item
   const updateItem = (itemId, field, value) => {
-    const updateInTree = (itemList) => {
+    // 1. First, apply the single change
+    const applyChange = (itemList) => {
       return itemList.map((item) => {
         if (item.id === itemId) {
           const updatedItem = { ...item, [field]: value };
 
           // Auto calculate totalTarget jika ada targetFrekuensi dan nominalSatuan
-          if (field === "targetFrekuensi" || field === "nominalSatuan") {
+          // ONLY if it's a leaf node 
+          if ((!item.children || item.children.length === 0) &&
+            (field === "targetFrekuensi" || field === "nominalSatuan")) {
             const freq =
               field === "targetFrekuensi" ? value : item.targetFrekuensi;
             const nominal =
@@ -603,13 +636,18 @@ export default function EditItemKeuanganPage() {
             }
           }
 
+          // If editing totalTarget directly on leaf
+          if (field === "totalTarget") {
+            // Just let it be updated
+          }
+
           return updatedItem;
         }
 
         if (item.children && item.children.length > 0) {
           return {
             ...item,
-            children: updateInTree(item.children),
+            children: applyChange(item.children),
           };
         }
 
@@ -617,7 +655,12 @@ export default function EditItemKeuanganPage() {
       });
     };
 
-    setItems(updateInTree(items));
+    const changedItems = applyChange(items);
+
+    // 2. Then, recursively recalculate all parenet targets (Roll-up)
+    const recalculatedItems = calculateTreeTargets(changedItems);
+
+    setItems(recalculatedItems);
   };
 
   // Save all items
@@ -689,21 +732,35 @@ export default function EditItemKeuanganPage() {
       ];
 
       // Remove duplicates
+      // 1. Process Deletions First (Bottom-Up approach ideally, but for now we trust backend constraints or simple iter)
+      // Convert Set to Array
       const uniqueItemsToDelete = [...new Set(itemsToDelete)];
 
-      // Delete removed items
       for (const itemId of uniqueItemsToDelete) {
-        await itemKeuanganService.delete(itemId);
+        // Only delete real items
+        if (!itemId.startsWith("temp_")) {
+          try {
+            await itemKeuanganService.delete(itemId);
+          } catch (error) {
+            // Ignore 404
+            if (error.response?.status !== 404) {
+              console.warn(`Failed to delete item ${itemId}`, error);
+            }
+          }
+        }
       }
 
-      // Clear marked for deletion after successful delete
-      setMarkedForDeletion(new Set());
 
-      // Flatten items untuk save/update ke database
+
+      // 2. Flatten items untuk save/update ke database
       const flattenItems = async (itemList, parentRealId = null) => {
         let result = [];
 
         for (const item of itemList) {
+          // SKIP valid items if they were marked for deletion 
+          // (Because we just deleted them above, or intended to)
+          if (markedForDeletion.has(item.id)) continue;
+
           const itemData = {
             kategoriId: selectedKategori,
             periodeId: selectedPeriode,
@@ -727,24 +784,34 @@ export default function EditItemKeuanganPage() {
           // Save parent first
           let savedItem;
 
-          if (item.id.startsWith("temp_")) {
-            // New item
-            savedItem = await itemKeuanganService.create(itemData);
-          } else {
-            // Existing item - update
-            savedItem = await itemKeuanganService.update(item.id, itemData);
-          }
+          try {
+            if (item.id.startsWith("temp_")) {
+              // New item
+              savedItem = await itemKeuanganService.create(itemData);
+            } else {
+              // Existing item - update
+              savedItem = await itemKeuanganService.update(item.id, itemData);
+            }
 
-          result.push(savedItem);
+            result.push(savedItem);
 
-          // Save children dengan parent ID yang benar
-          if (item.children && item.children.length > 0) {
-            const childResults = await flattenItems(
-              item.children,
-              savedItem.data?.id || savedItem.id
-            );
+            // Save children dengan parent ID yang benar
+            // Only recurse if we successfully saved the parent
+            if (savedItem && item.children && item.children.length > 0) {
+              const childResults = await flattenItems(
+                item.children,
+                savedItem.data?.id || savedItem.id
+              );
 
-            result.push(...childResults);
+              result.push(...childResults);
+            }
+          } catch (error) {
+            // Check for 404 (Item not found during Update)
+            if (!item.id.startsWith("temp_") && error.response?.status === 404) {
+              console.warn(`Item ${item.id} not found in DB (404). Skipping update.`);
+              continue; // Skip this item and its children
+            }
+            throw error; // Rethrow other errors
           }
         }
 
@@ -773,11 +840,10 @@ export default function EditItemKeuanganPage() {
       <div key={item.id} className={`space-y-4 ${indentClass}`}>
         {/* Item Form */}
         <Card
-          className={`relative transition-all duration-300 ${
-            isMarkedForDeletion
-              ? "opacity-60 bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"
-              : ""
-          }`}
+          className={`relative transition-all duration-300 ${isMarkedForDeletion
+            ? "opacity-60 bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"
+            : ""
+            }`}
         >
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -884,11 +950,10 @@ export default function EditItemKeuanganPage() {
                 </label>
                 <input
                   required
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                    isMarkedForDeletion
-                      ? "bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
-                      : ""
-                  }`}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${isMarkedForDeletion
+                    ? "bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
+                    : ""
+                    }`}
                   disabled={isMarkedForDeletion}
                   placeholder="Contoh: Persembahan Perpuluhan"
                   type="text"
@@ -903,11 +968,10 @@ export default function EditItemKeuanganPage() {
                   Deskripsi
                 </label>
                 <textarea
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                    isMarkedForDeletion
-                      ? "bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
-                      : ""
-                  }`}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${isMarkedForDeletion
+                    ? "bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
+                    : ""
+                    }`}
                   disabled={isMarkedForDeletion}
                   placeholder="Deskripsi detail item"
                   rows="2"
@@ -924,12 +988,11 @@ export default function EditItemKeuanganPage() {
                   Target Frekuensi
                 </label>
                 <input
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                    isMarkedForDeletion
-                      ? "bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
-                      : ""
-                  }`}
-                  disabled={isMarkedForDeletion}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${isMarkedForDeletion || (item.children && item.children.length > 0)
+                    ? "bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
+                    : ""
+                    }`}
+                  disabled={isMarkedForDeletion || (item.children && item.children.length > 0)}
                   placeholder="12"
                   type="number"
                   value={item.targetFrekuensi}
@@ -945,12 +1008,11 @@ export default function EditItemKeuanganPage() {
                   Satuan Frekuensi
                 </label>
                 <select
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                    isMarkedForDeletion
-                      ? "bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
-                      : ""
-                  }`}
-                  disabled={isMarkedForDeletion}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${isMarkedForDeletion || (item.children && item.children.length > 0)
+                    ? "bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
+                    : ""
+                    }`}
+                  disabled={isMarkedForDeletion || (item.children && item.children.length > 0)}
                   value={item.satuanFrekuensi}
                   onChange={(e) =>
                     updateItem(item.id, "satuanFrekuensi", e.target.value)
@@ -971,12 +1033,11 @@ export default function EditItemKeuanganPage() {
                   Nominal Per Satuan
                 </label>
                 <input
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                    isMarkedForDeletion
-                      ? "bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
-                      : ""
-                  }`}
-                  disabled={isMarkedForDeletion}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${isMarkedForDeletion || (item.children && item.children.length > 0)
+                    ? "bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
+                    : ""
+                    }`}
+                  disabled={isMarkedForDeletion || (item.children && item.children.length > 0)}
                   placeholder="1000000"
                   type="number"
                   value={item.nominalSatuan}
@@ -992,12 +1053,11 @@ export default function EditItemKeuanganPage() {
                   Total Target Anggaran
                 </label>
                 <input
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                    isMarkedForDeletion
-                      ? "bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
-                      : ""
-                  }`}
-                  disabled={isMarkedForDeletion}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${isMarkedForDeletion || (item.children && item.children.length > 0)
+                    ? "bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
+                    : ""
+                    }`}
+                  disabled={isMarkedForDeletion || (item.children && item.children.length > 0)}
                   placeholder="12000000"
                   type="number"
                   value={item.totalTarget}
@@ -1005,14 +1065,22 @@ export default function EditItemKeuanganPage() {
                     updateItem(item.id, "totalTarget", e.target.value)
                   }
                 />
-                {item.targetFrekuensi && item.nominalSatuan && (
-                  <div className="text-xs text-gray-500 mt-1">
-                    Auto: {item.targetFrekuensi} × {item.nominalSatuan} ={" "}
-                    {(
-                      parseFloat(item.targetFrekuensi || 0) *
-                      parseFloat(item.nominalSatuan || 0)
-                    ).toLocaleString("id-ID")}
+
+                {/* Auto Calculation Info */}
+                {item.children && item.children.length > 0 ? (
+                  <div className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">
+                    ⓘ Total otomatis dari penjumlahan sub-item
                   </div>
+                ) : (
+                  item.targetFrekuensi && item.nominalSatuan && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      Auto: {item.targetFrekuensi} × {item.nominalSatuan} ={" "}
+                      {(
+                        parseFloat(item.targetFrekuensi || 0) *
+                        parseFloat(item.nominalSatuan || 0)
+                      ).toLocaleString("id-ID")}
+                    </div>
+                  )
                 )}
               </div>
             </div>

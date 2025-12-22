@@ -199,7 +199,7 @@ const mapPendetaNavigation = (items) =>
 export const roleConfigs = {
   pendeta: {
     roleTitle: "Pendeta",
-    fullTitle: "JIO | Pendeta",
+    fullTitle: "JBOB | Pendeta",
     description:
       "Sistem pelayanan gereja untuk mendukung tugas pendeta dalam pelayanan jemaat dan kegiatan gereja.",
     baseRoute: "/pendeta",
@@ -207,8 +207,8 @@ export const roleConfigs = {
     logoIcon: Shield,
     userInfo: {
       name: "Pendeta GMIT",
-      email: "pendeta@gmit-imanuel.org",
-      organization: "Imanuel Oepura",
+      email: "pendeta@gmit-jbob.org",
+      organization: "Betlehem Oesapa Barat",
     },
 
     navigation: mapPendetaNavigation(adminNavigation), // pakai admin tapi label diubah
@@ -221,7 +221,7 @@ export const roleConfigs = {
   },
   admin: {
     roleTitle: "Admin",
-    fullTitle: "JIO | Admin",
+    fullTitle: "JBOB | Admin",
     description:
       "Sistem administrasi gereja untuk mengelola data jemaat, kegiatan, dan keuangan dengan mudah dan efisien.",
     baseRoute: "/admin",
@@ -229,8 +229,8 @@ export const roleConfigs = {
     logoIcon: Shield,
     userInfo: {
       name: "Admin GMIT",
-      email: "admin@gmit-imanuel.org",
-      organization: "Imanuel Oepura",
+      email: "admin@gmit-jbob.org",
+      organization: "Betlehem Oesapa Barat",
     },
     navigation: [
       { href: "/admin/dashboard", label: "Dashboard", icon: Home },
@@ -431,14 +431,14 @@ export const roleConfigs = {
     roleTitle: "Jemaat",
     fullTitle: "Portal Jemaat",
     description:
-      "Portal untuk jemaat GMIT Imanuel Oepura untuk mengakses informasi kegiatan, persembahan, dan layanan gereja.",
+      "Portal untuk jemaat GMIT Betlehem Oesapa Barat untuk mengakses informasi kegiatan, persembahan, dan layanan gereja.",
     baseRoute: "/jemaat",
     dashboardRoute: "/jemaat/dashboard",
     logoIcon: Heart,
     userInfo: {
       name: "Jemaat GMIT",
-      email: "jemaat@gmit-imanuel.org",
-      organization: "Imanuel Oepura",
+      email: "jemaat@gmit-jbob.org",
+      organization: "Betlehem Oesapa Barat",
     },
     navigation: [
       { href: "/jemaat/dashboard", label: "Beranda", icon: Home },
@@ -459,7 +459,7 @@ export const roleConfigs = {
 
   majelis: {
     roleTitle: "Majelis",
-    fullTitle: "JIO | Majelis",
+    fullTitle: "JBOB | Majelis",
     description:
       "Sistem manajemen untuk majelis gereja dalam mengawasi dan mengelola kegiatan pelayanan.",
     baseRoute: "/majelis",
@@ -467,8 +467,8 @@ export const roleConfigs = {
     logoIcon: Building2,
     userInfo: {
       name: "Majelis GMIT",
-      email: "majelis@gmit-imanuel.org",
-      organization: "Imanuel Oepura",
+      email: "majelis@gmit-jbob.org",
+      organization: "Betlehem Oesapa Barat",
     },
     navigation: [
       { href: "/majelis/dashboard", label: "Dashboard", icon: Home },
@@ -518,7 +518,7 @@ export const roleConfigs = {
 
   employee: {
     roleTitle: "Pegawai",
-    fullTitle: "JIO | Pegawai",
+    fullTitle: "JBOB | Pegawai",
     description:
       "Sistem untuk pegawai gereja dalam mengelola tugas harian dan koordinasi pelayanan.",
     baseRoute: "/employee",
@@ -526,8 +526,8 @@ export const roleConfigs = {
     logoIcon: UserPlus,
     userInfo: {
       name: "Pegawai GMIT",
-      email: "employee@gmit-imanuel.org",
-      organization: "Imanuel Oepura",
+      email: "employee@gmit-jbob.org",
+      organization: "Betlehem Oesapa Barat",
     },
     navigation: [
       { href: "/employee/dashboard", label: "Dashboard", icon: Home },
@@ -583,8 +583,8 @@ export const roleConfigs = {
 export const churchContact = {
   address: "Jl. Gereja No. 123, Kupang, NTT",
   phone: "+62 380-123456",
-  email: "info@gmit-imanuel.org",
-  website: "www.gmit-imanuel.org",
+  email: "info@gmit-jbob.org",
+  website: "www.gmit-jbob.org",
 };
 
 // Helper function to get role config

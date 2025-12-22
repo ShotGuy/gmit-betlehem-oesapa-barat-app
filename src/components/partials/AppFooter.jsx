@@ -1,6 +1,5 @@
-import { Heart, Mail, MapPin, Phone } from "lucide-react";
 
-import { getRoleConfig, churchContact } from "@/config/navigationItem";
+import { getRoleConfig } from "@/config/navigationItem";
 
 export default function AppFooter({ role = "admin" }) {
   const config = getRoleConfig(role);
@@ -62,7 +61,7 @@ export default function AppFooter({ role = "admin" }) {
         <div className="mt-8 pt-6 border-t border-gray-700">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-sm text-gray-300">
-              © 2025 GMIT Imanuel Oepura. Sistem {config.roleTitle} Gereja.
+              © 2025 GMIT Betlehem Oesapa Barat. Sistem {config.roleTitle} Gereja.
             </div>
             {/* <div className="flex items-center mt-4 md:mt-0 text-sm text-gray-300">
               <span>Dibuat dengan</span>

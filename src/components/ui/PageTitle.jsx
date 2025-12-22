@@ -8,12 +8,12 @@ export default function PageTitle({
   url,
   type = "website",
 }) {
-  const baseTitle = "GMIT Imanuel Oepura";
+  const baseTitle = "GMIT Betlehem Oesapa Barat";
   const fullTitle = title ? `${title} - ${baseTitle}` : baseTitle;
   const baseDescription =
     description ||
-    "GMIT Jemaat Imanuel Oepura (JIO) - Gereja Masehi Injili di Timor yang melayani jemaat dengan penuh kasih dan dedikasi di Kupang, Nusa Tenggara Timur.";
-  const baseUrl = "https://www.gmitjio-oepura.org";
+    "GMIT Jemaat Betlehem Oesapa Barat (JBOB) - Gereja Masehi Injili di Timor yang melayani jemaat dengan penuh kasih dan dedikasi di Kupang, Nusa Tenggara Timur.";
+  const baseUrl = "https://www.gmit-jbob.org";
   const fullUrl = url ? `${baseUrl}${url}` : baseUrl;
   const fullImage = image.startsWith("http") ? image : `${baseUrl}${image}`;
 
@@ -22,14 +22,14 @@ export default function PageTitle({
       <title>{fullTitle}</title>
       <meta content={baseDescription} name="description" />
       {keywords ? (
-        <meta content={`${keywords}, GMIT, GMIT Jemaat Imanuel Oepura, JIO, Gereja Kupang, Gereja Kristen, Ibadah Minggu, Pelayanan Gereja, Kegiatan Gereja`} name="keywords" />
+        <meta content={`${keywords}, GMIT, GMIT Jemaat Betlehem Oesapa Barat, JBOB, Gereja Kupang, Gereja Kristen, Ibadah Minggu, Pelayanan Gereja, Kegiatan Gereja`} name="keywords" />
       ) : (
-        <meta content="GMIT, GMIT Jemaat Imanuel Oepura, JIO, Gereja Masehi Injili di Timor, Gereja Kupang, Ibadah Minggu, Pelayanan Gereja, Kegiatan Gereja, Sidi, Baptis, Pernikahan, Nusa Tenggara Timur" name="keywords" />
+        <meta content="GMIT, GMIT Jemaat Betlehem Oesapa Barat, JBOB, Gereja Masehi Injili di Timor, Gereja Kupang, Ibadah Minggu, Pelayanan Gereja, Kegiatan Gereja, Sidi, Baptis, Pernikahan, Nusa Tenggara Timur" name="keywords" />
       )}
       <meta content="width=device-width, initial-scale=1" name="viewport" />
       <meta content="index, follow" name="robots" />
-      <meta content="GMIT Jemaat Imanuel Oepura" name="author" />
-      <meta content="GMIT Jemaat Imanuel Oepura" name="publisher" />
+      <meta content="GMIT Jemaat Betlehem Oesapa Barat" name="author" />
+      <meta content="GMIT Jemaat Betlehem Oesapa Barat" name="publisher" />
       <meta content="id" name="language" />
 
       {/* Favicon */}
@@ -54,7 +54,7 @@ export default function PageTitle({
       <meta content={baseDescription} property="og:description" />
       <meta content={fullImage} property="og:image" />
       <meta content={fullUrl} property="og:url" />
-      <meta content="GMIT Imanuel Oepura" property="og:site_name" />
+      <meta content="GMIT Betlehem Oesapa Barat" property="og:site_name" />
       <meta content="id_ID" property="og:locale" />
 
       {/* Twitter Card */}
@@ -62,7 +62,7 @@ export default function PageTitle({
       <meta content={fullTitle} name="twitter:title" />
       <meta content={baseDescription} name="twitter:description" />
       <meta content={fullImage} name="twitter:image" />
-      <meta content="@gmitjio" name="twitter:site" />
+      <meta content="@gmitjbob" name="twitter:site" />
 
       {/* Canonical URL */}
       <link href={fullUrl} rel="canonical" />
@@ -73,8 +73,8 @@ export default function PageTitle({
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Organization",
-            name: "GMIT Jemaat Imanuel Oepura",
-            alternateName: "JIO",
+            name: "GMIT Jemaat Betlehem Oesapa Barat",
+            alternateName: "JBOB",
             url: baseUrl,
             logo: fullImage,
             description: baseDescription,

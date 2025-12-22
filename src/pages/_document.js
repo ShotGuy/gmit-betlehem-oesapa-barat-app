@@ -9,14 +9,13 @@ export default function Document() {
         <meta content="default" name="apple-mobile-web-app-status-bar-style" />
         <meta content="GMIT JBOB" name="apple-mobile-web-app-title" />
         <meta
-          content="GMIT Jemaat Imanuel Oepura (JIO) - Gereja Masehi Injili di Timor yang melayani jemaat dengan penuh kasih dan dedikasi di Kupang, Nusa Tenggara Timur. Ibadah Minggu, Cell Group, Sidi, Pernikahan, Baptis, Pelayanan Jemaat, dan kegiatan gereja lainnya di Kupang NTT."
+          content="GMIT Jemaat Betlehem Oesapa Barat (JBOB) - Gereja Masehi Injili di Timor yang melayani jemaat dengan penuh kasih dan dedikasi di Kupang, Nusa Tenggara Timur. Ibadah Minggu, Cell Group, Sidi, Pernikahan, Baptis, Pelayanan Jemaat, dan kegiatan gereja lainnya di Kupang NTT."
           name="description"
         />
         <meta content="telephone=no" name="format-detection" />
         <meta content="yes" name="mobile-web-app-capable" />
         <meta content="/browserconfig.xml" name="msapplication-config" />
         <meta content="#2B5797" name="msapplication-TileColor" />
-        <meta content="no" name="msapplication-tap-highlight" />
         <meta content="#2B5797" name="theme-color" />
 
         {/* Additional SEO meta tags */}
@@ -42,7 +41,7 @@ export default function Document() {
 
         {/* Enhanced SEO Keywords */}
         <meta
-          content="GMIT, GMIT Imanuel Oepura, GMIT Jemaat Imanuel Oepura, JIO, Gereja Imanuel Oepura Kupang, Gereja Kristen Kupang, Gereja Protestan Kupang, Gereja di Kupang, Ibadah Minggu Kupang, Ibadah Gereja Kupang, Pelayanan Gereja, Jemaat GMIT, Sidi GMIT, Baptis GMIT, Pernikahan Gereja, Kegiatan Gereja Kupang, NTT, Nusa Tenggara Timur, GMIT Kupang, GMIT JIO"
+          content="GMIT, GMIT Betlehem Oesapa Barat, GMIT Jemaat Betlehem Oesapa Barat, JBOB, Gereja Betlehem Oesapa Barat Kupang, Gereja Kristen Kupang, Gereja Protestan Kupang, Gereja di Kupang, Ibadah Minggu Kupang, Ibadah Gereja Kupang, Pelayanan Gereja, Jemaat GMIT, Sidi GMIT, Baptis GMIT, Pernikahan Gereja, Kegiatan Gereja Kupang, NTT, Nusa Tenggara Timur, GMIT Kupang, GMIT JBOB"
           name="keywords"
         />
 
@@ -77,30 +76,30 @@ export default function Document() {
         <link href="https://beta.ourmanna.com" rel="preconnect" />
 
         <meta content="summary_large_image" name="twitter:card" />
-        <meta content="https://www.gmitjio-oepura.org" name="twitter:url" />
+        <meta content="https://www.gmit-jbob.org" name="twitter:url" />
         <meta content="GMIT Betlehem Oesapa Barat - Gereja Masehi Injili di Timor" name="twitter:title" />
         <meta
-          content="GMIT Jemaat Imanuel Oepura (JIO) - Gereja Masehi Injili di Timor yang melayani jemaat dengan penuh kasih dan dedikasi di Kupang, Nusa Tenggara Timur. Ibadah, Pelayanan, dan Persekutuan Jemaat."
+          content="GMIT Jemaat Betlehem Oesapa Barat (JBOB) - Gereja Masehi Injili di Timor yang melayani jemaat dengan penuh kasih dan dedikasi di Kupang, Nusa Tenggara Timur. Ibadah, Pelayanan, dan Persekutuan Jemaat."
           name="twitter:description"
         />
         <meta
-          content="https://www.gmitjio-oepura.org/logo-GMIT.png"
+          content="https://www.gmit-jbob.org/logo-GMIT.png"
           name="twitter:image"
         />
-        <meta content="@gmitjio" name="twitter:site" />
-        <meta content="@gmitjio" name="twitter:creator" />
+        <meta content="@gmitjbob" name="twitter:site" />
+        <meta content="@gmitjbob" name="twitter:creator" />
 
         {/* Enhanced Open Graph Tags */}
         <meta content="website" property="og:type" />
         <meta content="GMIT Betlehem Oesapa Barat - Gereja Masehi Injili di Timor" property="og:title" />
         <meta
-          content="GMIT Jemaat Imanuel Oepura (JIO) - Gereja Masehi Injili di Timor yang melayani jemaat dengan penuh kasih dan dedikasi di Kupang, Nusa Tenggara Timur. Ibadah, Pelayanan, dan Persekutuan Jemaat."
+          content="GMIT Jemaat Betlehem Oesapa Barat (JBOB) - Gereja Masehi Injili di Timor yang melayani jemaat dengan penuh kasih dan dedikasi di Kupang, Nusa Tenggara Timur. Ibadah, Pelayanan, dan Persekutuan Jemaat."
           property="og:description"
         />
         <meta content="GMIT Betlehem Oesapa Barat" property="og:site_name" />
-        <meta content="https://www.gmitjio-oepura.org" property="og:url" />
+        <meta content="https://www.gmit-jbob.org" property="og:url" />
         <meta
-          content="https://www.gmitjio-oepura.org/logo-GMIT.png"
+          content="https://www.gmit-jbob.org/logo-GMIT.png"
           property="og:image"
         />
         <meta content="1200" property="og:image:width" />
@@ -111,7 +110,7 @@ export default function Document() {
         <meta content="Kupang" property="og:region" />
         <meta content="ID" property="og:country-name" />
 
-        <link href="https://www.gmitjio-oepura.org" rel="canonical" />
+        <link href="https://www.gmit-jbob.org" rel="canonical" />
 
         {/* Enhanced Schema.org Structured Data */}
         <script
@@ -119,13 +118,13 @@ export default function Document() {
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "LocalBusiness",
-              "@id": "https://www.gmitjio-oepura.org",
-              "name": "GMIT Jemaat Imanuel Oepura",
-              "alternateName": ["GMIT Imanuel Oepura", "JIO", "GMIT JIO"],
-              "url": "https://www.gmitjio-oepura.org",
-              "logo": "https://www.gmitjio-oepura.org/logo-GMIT.png",
-              "image": "https://www.gmitjio-oepura.org/logo-GMIT.png",
-              "description": "GMIT Jemaat Imanuel Oepura (JIO) - Gereja Masehi Injili di Timor yang melayani jemaat dengan penuh kasih dan dedikasi di Kupang, Nusa Tenggara Timur.",
+              "@id": "https://www.gmit-jbob.org",
+              "name": "GMIT Jemaat Betlehem Oesapa Barat",
+              "alternateName": ["GMIT Betlehem Oesapa Barat", "JBOB", "GMIT JBOB"],
+              "url": "https://www.gmit-jbob.org",
+              "logo": "https://www.gmit-jbob.org/logo-GMIT.png",
+              "image": "https://www.gmit-jbob.org/logo-GMIT.png",
+              "description": "GMIT Jemaat Betlehem Oesapa Barat (JBOB) - Gereja Masehi Injili di Timor yang melayani jemaat dengan penuh kasih dan dedikasi di Kupang, Nusa Tenggara Timur.",
               "address": {
                 "@type": "PostalAddress",
                 "addressLocality": "Kupang",

@@ -9,11 +9,11 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import NumberInput from "@/components/ui/inputs/NumberInput";
 import SelectInput from "@/components/ui/inputs/SelectInput";
 import TextAreaInput from "@/components/ui/inputs/TextAreaInput";
 import TextInput from "@/components/ui/inputs/TextInput";
-import ConfirmModal from "@/components/ui/ConfirmModal";
 
 const itemKeuanganService = {
   create: async (data) => {
@@ -408,15 +408,49 @@ export default function CreateItemKeuanganPage() {
   // Legacy function name for compatibility
   const deleteItem = showDeleteConfirmation;
 
+  // Helper: Recalculate targets from bottom up
+  const calculateTreeTargets = (itemList) => {
+    return itemList.map((item) => {
+      // 1. Process children first (Recursion)
+      let updatedChildren = [];
+      if (item.children && item.children.length > 0) {
+        updatedChildren = calculateTreeTargets(item.children);
+      }
+
+      // 2. Calculate own target
+      let newItem = { ...item, children: updatedChildren };
+
+      if (updatedChildren.length > 0) {
+        // If has children, Total Target = Sum of Children's Total Target
+        const sumChildren = updatedChildren.reduce((sum, child) => {
+          return sum + (parseFloat(child.totalTarget) || 0);
+        }, 0);
+
+        newItem.totalTarget = sumChildren.toString();
+        // Clear manual inputs for parent to avoid confusion
+        newItem.targetFrekuensi = "";
+        newItem.nominalSatuan = "";
+      } else {
+        // If leaf (no children), ensure totalTarget respects the manual formula if fields exist
+        // (This part usually handled by the input change, but good to ensure consistency)
+      }
+
+      return newItem;
+    });
+  };
+
   // Update item
   const updateItem = (itemId, field, value) => {
-    const updateInTree = (itemList) => {
+    // 1. First, apply the single change
+    const applyChange = (itemList) => {
       return itemList.map((item) => {
         if (item.id === itemId) {
           const updatedItem = { ...item, [field]: value };
 
           // Auto calculate totalTarget jika ada targetFrekuensi dan nominalSatuan
-          if (field === "targetFrekuensi" || field === "nominalSatuan") {
+          // ONLY if it's a leaf node (will be enforced by UI, but logic here too)
+          if ((!item.children || item.children.length === 0) &&
+            (field === "targetFrekuensi" || field === "nominalSatuan")) {
             const freq =
               field === "targetFrekuensi" ? value : item.targetFrekuensi;
             const nominal =
@@ -429,13 +463,18 @@ export default function CreateItemKeuanganPage() {
             }
           }
 
+          // If editing totalTarget directly on leaf
+          if (field === "totalTarget") {
+            // Just let it be updated
+          }
+
           return updatedItem;
         }
 
         if (item.children && item.children.length > 0) {
           return {
             ...item,
-            children: updateInTree(item.children),
+            children: applyChange(item.children),
           };
         }
 
@@ -443,7 +482,12 @@ export default function CreateItemKeuanganPage() {
       });
     };
 
-    setItems(updateInTree(items));
+    const changedItems = applyChange(items);
+
+    // 2. Then, recursively recalculate all parenet targets (Roll-up)
+    const recalculatedItems = calculateTreeTargets(changedItems);
+
+    setItems(recalculatedItems);
   };
 
   // Save all items
@@ -648,6 +692,7 @@ export default function CreateItemKeuanganPage() {
                   onChange={(value) =>
                     updateItem(item.id, "targetFrekuensi", value)
                   }
+                  disabled={item.children && item.children.length > 0}
                 />
               </div>
 
@@ -667,6 +712,7 @@ export default function CreateItemKeuanganPage() {
                   onChange={(value) =>
                     updateItem(item.id, "satuanFrekuensi", value)
                   }
+                  disabled={item.children && item.children.length > 0}
                 />
               </div>
 
@@ -680,6 +726,7 @@ export default function CreateItemKeuanganPage() {
                   onChange={(value) =>
                     updateItem(item.id, "nominalSatuan", value)
                   }
+                  disabled={item.children && item.children.length > 0}
                 />
               </div>
 
@@ -693,15 +740,24 @@ export default function CreateItemKeuanganPage() {
                   onChange={(value) =>
                     updateItem(item.id, "totalTarget", value)
                   }
+                  disabled={item.children && item.children.length > 0}
                 />
-                {item.targetFrekuensi && item.nominalSatuan && (
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Auto: {item.targetFrekuensi} × {item.nominalSatuan} ={" "}
-                    {(
-                      parseFloat(item.targetFrekuensi || 0) *
-                      parseFloat(item.nominalSatuan || 0)
-                    ).toLocaleString("id-ID")}
+
+                {/* Auto Calculation Info */}
+                {item.children && item.children.length > 0 ? (
+                  <div className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">
+                    ⓘ Total otomatis dari penjumlahan sub-item
                   </div>
+                ) : (
+                  item.targetFrekuensi && item.nominalSatuan && (
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Auto: {item.targetFrekuensi} × {item.nominalSatuan} ={" "}
+                      {(
+                        parseFloat(item.targetFrekuensi || 0) *
+                        parseFloat(item.nominalSatuan || 0)
+                      ).toLocaleString("id-ID")}
+                    </div>
+                  )
                 )}
               </div>
             </div>

@@ -1,311 +1,249 @@
+
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import {
-  Activity,
+  ArrowRight,
   BarChart3,
-  Building,
-  Calculator,
   Calendar,
-  Eye,
+  ChevronRight,
+  DollarSign,
   Filter,
-  PieChart,
-  Settings,
+  LayoutDashboard,
+  PieChart as PieIcon,
   Target,
   TrendingDown,
-  TrendingUp,
+  TrendingUp
 } from "lucide-react";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
-import AdminLayout from "@/components/layout/AdminLayout";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
 import LoadingScreen from "@/components/ui/LoadingScreen";
 import PageHeader from "@/components/ui/PageHeader";
-import PageTitle from "@/components/ui/PageTitle";
 
 export default function KeuanganDashboard() {
   const router = useRouter();
   const [selectedPeriode, setSelectedPeriode] = useState("");
+  const [selectedParentId, setSelectedParentId] = useState("root"); // 'root' means top level
 
-  // Query untuk get periode list
-  const { data: periodeList } = useQuery({
+  // 1. Fetch Periode List
+  const { data: periodeList, isLoading: isLoadingPeriode } = useQuery({
     queryKey: ["periode-list"],
     queryFn: async () => {
       const response = await axios.get("/api/keuangan/periode", {
         params: { limit: 50, isActive: true },
       });
-
       return response.data.data.items;
     },
-  });
-
-  // Query untuk get kategori list
-  const { data: kategoriList } = useQuery({
-    queryKey: ["kategori-list"],
-    queryFn: async () => {
-      const response = await axios.get("/api/keuangan/kategori");
-
-      return response.data.data;
+    onSuccess: (data) => {
+      // Auto-select active period if none selected
+      if (!selectedPeriode && data.length > 0) {
+        const active = data.find((p) => p.status === "AKTIF");
+        if (active) setSelectedPeriode(active.id);
+      }
     },
   });
 
-  // Query untuk get item keuangan berdasarkan periode
-  const { data: itemData, isLoading } = useQuery({
-    queryKey: ["dashboard-item-keuangan", selectedPeriode],
+  // 2. Fetch Aggregated Summary Data
+  const { data: summaryData, isLoading: isLoadingData } = useQuery({
+    queryKey: ["realisasi-summary-aggregated", selectedPeriode],
     queryFn: async () => {
-      const params = {};
-
-      if (selectedPeriode) params.periodeId = selectedPeriode;
-
-      const response = await axios.get("/api/keuangan/item", { params });
-
-      return response.data.data;
-    },
-    enabled: !!selectedPeriode,
-  });
-
-  // Query untuk get realisasi summary
-  const { data: realisasiSummary } = useQuery({
-    queryKey: ["dashboard-realisasi-summary", selectedPeriode],
-    queryFn: async () => {
-      const params = {};
-
-      if (selectedPeriode) params.periodeId = selectedPeriode;
-
       const response = await axios.get("/api/keuangan/realisasi/summary", {
-        params,
+        params: { periodeId: selectedPeriode },
       });
-
-      return response.data.data;
+      return response.data.data; // { items: [], summary: {} }
     },
     enabled: !!selectedPeriode,
   });
 
-  // Format rupiah
-  const formatRupiah = (amount) => {
-    if (!amount || amount === 0) return "Rp 0";
-
-    return `Rp ${parseFloat(amount).toLocaleString("id-ID")}`;
+  const formatRupiah = (value) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(value);
   };
 
-  // Calculate statistics from real data including realisasi
-  const statistics = useMemo(() => {
-    if (!itemData || !kategoriList) return null;
+  // 3. Process Data for Visualization based on Selection
+  const dashboardData = useMemo(() => {
+    if (!summaryData || !summaryData.items) return null;
 
-    // Ambil items dari struktur API response yang sebenarnya
-    let items = [];
+    const allItems = summaryData.items;
 
-    if (itemData && itemData.items && Array.isArray(itemData.items)) {
-      items = itemData.items;
-    } else if (Array.isArray(itemData)) {
-      items = itemData;
-    } else if (itemData && Array.isArray(itemData.data)) {
-      items = itemData.data;
-    } else if (
-      itemData &&
-      itemData.data &&
-      Array.isArray(itemData.data.items)
-    ) {
-      items = itemData.data.items;
+    // Determine the "Current Scope" item (The parent we are looking at)
+    // If 'root', we are looking at top-level items (level 1 usually, or items with no parent)
+    let currentScopeItem = null;
+    let childItems = [];
+
+    if (selectedParentId === "root") {
+      // Logic: Get items with level 1 or no parent
+      childItems = allItems.filter(
+        (i) => i.level === 1 || !i.parentId || i.parentId === null
+      );
+
+      // Calculate total scope stats manually from children for Root view
+      currentScopeItem = {
+        nama: "Ringkasan Eksekutif (All)",
+        kode: "ALL",
+        totalTarget: childItems
+          .reduce((sum, i) => sum + parseFloat(i.totalTarget || 0), 0)
+          .toString(),
+        totalRealisasiAmount: childItems
+          .reduce((sum, i) => sum + parseFloat(i.totalRealisasiAmount || 0), 0)
+          .toString(),
+      };
+    } else {
+      currentScopeItem = allItems.find((i) => i.id === selectedParentId);
+      if (currentScopeItem) {
+        childItems = allItems.filter((i) => i.parentId === selectedParentId);
+      }
     }
 
-    // Pastikan kategoriList adalah array atau ambil dari nested property
-    let kategoris = [];
+    if (!currentScopeItem) return null;
 
-    if (Array.isArray(kategoriList)) {
-      kategoris = kategoriList;
-    } else if (kategoriList && Array.isArray(kategoriList.items)) {
-      kategoris = kategoriList.items;
-    } else if (kategoriList && Array.isArray(kategoriList.data)) {
-      kategoris = kategoriList.data;
-    } else if (
-      kategoriList &&
-      kategoriList.data &&
-      Array.isArray(kategoriList.data.items)
-    ) {
-      kategoris = kategoriList.data.items;
-    }
+    // A. Chart Data: Bar Chart (Target vs Realisasi per Child)
+    const barChartData = childItems.map((child) => ({
+      name: child.nama.length > 20 ? child.nama.substring(0, 20) + "..." : child.nama,
+      full_name: child.nama,
+      kode: child.kode,
+      target: parseFloat(child.totalTarget || 0),
+      realisasi: parseFloat(child.totalRealisasiAmount || 0),
+      capaian: parseFloat(child.achievementPercentage || 0),
+    }));
 
-    if (items.length === 0 || kategoris.length === 0) {
-      return null;
-    }
+    // B. Chart Data: Donut Chart (Composition of Realization)
+    const compositionData = childItems
+      .map((child) => ({
+        name: child.nama,
+        value: parseFloat(child.totalRealisasiAmount || 0),
+      }))
+      .filter((d) => d.value > 0)
+      .sort((a, b) => b.value - a.value);
 
-    // Pisahkan berdasarkan kategori
-    const penerimaan = items.filter((item) => {
-      const kategori = kategoris.find((k) => k.id === item.kategoriId);
-
-      return kategori?.nama?.toLowerCase().includes("penerimaan");
-    });
-    const pengeluaran = items.filter((item) => {
-      const kategori = kategoris.find((k) => k.id === item.kategoriId);
-
-      return kategori?.nama?.toLowerCase().includes("pengeluaran");
-    });
-
-    // Hitung total target dan actual untuk penerimaan
-    const totalPenerimaanTarget = penerimaan.reduce(
-      (sum, item) => sum + (parseFloat(item.totalTarget) || 0),
-      0
-    );
-    const totalPenerimaanActual = penerimaan.reduce(
-      (sum, item) => sum + (parseFloat(item.nominalActual) || 0),
-      0
-    );
-
-    // Hitung total target dan actual untuk pengeluaran
-    const totalPengeluaranTarget = pengeluaran.reduce(
-      (sum, item) => sum + (parseFloat(item.totalTarget) || 0),
-      0
-    );
-    const totalPengeluaranActual = pengeluaran.reduce(
-      (sum, item) => sum + (parseFloat(item.nominalActual) || 0),
-      0
-    );
-
-    // Hitung total keseluruhan dari semua item (tanpa melihat kategori)
-    const grandTotalTarget = items.reduce(
-      (sum, item) => sum + (parseFloat(item.totalTarget) || 0),
-      0
-    );
-    const grandTotalActual = items.reduce(
-      (sum, item) => sum + (parseFloat(item.nominalActual) || 0),
-      0
-    );
-
-    // Saldo dan persentase pencapaian
-    const saldoTarget = totalPenerimaanTarget - totalPengeluaranTarget;
-    const saldoActual = totalPenerimaanActual - totalPengeluaranActual;
-    const achievementPercentage =
-      grandTotalTarget > 0 ? (grandTotalActual / grandTotalTarget) * 100 : 0;
-
-    // Group by level untuk analisis hierarchy
-    const itemsByLevel = items.reduce((acc, item) => {
-      const level = item.level || 1;
-
-      if (!acc[level]) acc[level] = [];
-      acc[level].push(item);
-
-      return acc;
-    }, {});
-
-    // Calculate max level safely
-    const levels = items.map((item) => item.level || 1);
-    const maxLevel = levels.length > 0 ? Math.max(...levels) : 0;
-
-    // Hitung realisasi dari realisasiSummary jika tersedia
-    const totalRealisasiAmount =
-      realisasiSummary?.summary?.totalRealisasiAmount || 0;
-    const totalTargetFromSummary =
-      realisasiSummary?.summary?.totalTargetAmount || grandTotalTarget;
-    const realisasiAchievementPercentage =
-      totalTargetFromSummary > 0
-        ? (totalRealisasiAmount / totalTargetFromSummary) * 100
-        : 0;
+    // C. Statistics for Cards
+    const stats = {
+      target: parseFloat(currentScopeItem.totalTarget || 0),
+      realisasi: parseFloat(currentScopeItem.totalRealisasiAmount || 0),
+      variance:
+        parseFloat(currentScopeItem.totalRealisasiAmount || 0) -
+        parseFloat(currentScopeItem.totalTarget || 0),
+      percentage:
+        parseFloat(currentScopeItem.totalTarget || 0) > 0
+          ? (parseFloat(currentScopeItem.totalRealisasiAmount || 0) /
+            parseFloat(currentScopeItem.totalTarget || 0)) *
+          100
+          : 0,
+    };
 
     return {
-      totalPenerimaanTarget,
-      totalPengeluaranTarget,
-      totalPenerimaanActual,
-      totalPengeluaranActual,
-      saldoTarget,
-      saldoActual,
-      grandTotalTarget,
-      grandTotalActual,
-      achievementPercentage,
-      totalItems: items.length,
-      totalPenerimaan: penerimaan.length,
-      totalPengeluaran: pengeluaran.length,
-      itemsByLevel,
-      maxLevel,
-      // Realisasi data
-      totalRealisasiAmount,
-      realisasiAchievementPercentage,
-      totalTargetFromSummary,
+      currentScopeItem,
+      childItems,
+      barChartData,
+      compositionData,
+      stats,
+      allItems, // Pass through for searching/filtering in dropdown
     };
-  }, [itemData, kategoriList, realisasiSummary]);
+  }, [summaryData, selectedParentId]);
 
-  const selectedPeriodeData = periodeList?.find(
-    (p) => p.id === selectedPeriode
-  );
+  // Handle Loading
+  if (isLoadingPeriode) return <LoadingScreen message="Memuat periode..." />;
 
-  const getPercentageColor = (percentage) => {
-    if (percentage >= 80) return "text-green-600 dark:text-green-400";
-    if (percentage >= 50) return "text-yellow-600 dark:text-yellow-400";
-
-    return "text-red-600 dark:text-red-400";
-  };
-
-  const getBudgetStatus = (actual, target) => {
-    if (!target || target === 0) return { status: "no-target", color: "gray" };
-    const percentage = (actual / target) * 100;
-
-    if (percentage >= 90) return { status: "excellent", color: "green" };
-    if (percentage >= 70) return { status: "good", color: "blue" };
-    if (percentage >= 50) return { status: "moderate", color: "yellow" };
-
-    return { status: "poor", color: "red" };
-  };
+  // Define colors for charts
+  const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-      <PageTitle title="Dashboard Keuangan" />
-      <PageHeader
-        breadcrumb={[
-          { label: "Admin", href: "/admin/dashboard" },
-          { label: "Dashboard Keuangan" },
-        ]}
-        description="Dashboard rencana anggaran dan monitoring keuangan GMIT Imanuel Oepura"
-        title="Dashboard Keuangan"
-      />
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900/50 transition-colors">
+      <Head>
+        <title>Dashboard Statistik Keuangan | GMIT J-BOB</title>
+      </Head>
 
-      <div className="max-w-7xl mx-auto p-6">
-        {/* Period Filter */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Filter className="h-5 w-5 mr-2" />
-              Filter Periode Anggaran
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Pilih Periode Anggaran
+      <div className="p-6">
+        <PageHeader
+          title="Analisis Keuangan"
+          description="Pusat data statistik dan monitoring anggaran gereja"
+          breadcrumb={[
+            { label: "Admin", href: "/admin" },
+            { label: "Keuangan", href: "/admin/keuangan" },
+          ]}
+        />
+
+        {/* --- Top Filters --- */}
+        <Card className="mb-6 shadow-sm border-gray-200 dark:border-gray-800">
+          <CardContent className="pt-6">
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* 1. Periode Selector */}
+              <div className="w-full md:w-1/3">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+                  Periode Anggaran
                 </label>
-                <select
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={selectedPeriode}
-                  onChange={(e) => setSelectedPeriode(e.target.value)}
-                >
-                  <option value="">Pilih Periode</option>
-                  {periodeList?.map((periode) => (
-                    <option key={periode.id} value={periode.id}>
-                      {periode.nama} ({periode.tahun})
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                  <select
+                    value={selectedPeriode}
+                    onChange={(e) => {
+                      setSelectedPeriode(e.target.value);
+                      setSelectedParentId("root"); // Reset drill-down
+                    }}
+                    className="w-full pl-11 pr-4 py-2 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  >
+                    <option value="" disabled>Pilih Periode...</option>
+                    {periodeList?.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.nama} ({p.tahun})
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
-              {selectedPeriodeData && (
-                <div className="flex items-center">
-                  <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                    <Calendar className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="font-medium text-gray-900 dark:text-white">
-                      {selectedPeriodeData.nama}
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(
-                        selectedPeriodeData.tanggalMulai
-                      ).toLocaleDateString("id-ID")}{" "}
-                      -{" "}
-                      {new Date(
-                        selectedPeriodeData.tanggalAkhir
-                      ).toLocaleDateString("id-ID")}
-                    </p>
+
+              {/* 2. Drill-down Selector */}
+              {dashboardData && (
+                <div className="w-full md:w-2/3">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+                    Fokus Analisis (Drill-down)
+                  </label>
+                  <div className="relative">
+                    <Filter className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                    <select
+                      value={selectedParentId}
+                      onChange={(e) => setSelectedParentId(e.target.value)}
+                      className="w-full pl-11 pr-4 py-2 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    >
+                      <option value="root">🔍 Tampilkan Ringkasan Utama (Level Teratas)</option>
+                      <optgroup label="Detail Per Kategori/Bidang">
+                        {dashboardData.allItems
+                          .filter(i => i.hasChildren) // Only show items that have children (sub-items) to drill into
+                          .sort((a, b) => a.kode.localeCompare(b.kode))
+                          .map(item => (
+                            <option key={item.id} value={item.id}>
+                              {item.kode} - {item.nama}
+                            </option>
+                          ))
+                        }
+                      </optgroup>
+                    </select>
                   </div>
                 </div>
               )}
@@ -313,934 +251,295 @@ export default function KeuanganDashboard() {
           </CardContent>
         </Card>
 
+        {/* --- Main Dashboard Content --- */}
         {!selectedPeriode ? (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center py-12">
-                <Calendar className="h-16 w-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-                <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
-                  Pilih Periode Anggaran
-                </h3>
-                <p className="text-gray-500 dark:text-gray-400 mb-6">
-                  Silakan pilih periode anggaran untuk melihat dashboard
-                  keuangan yang detail
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
-                  <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <Settings className="h-8 w-8 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
-                    <h4 className="font-medium text-gray-900 dark:text-white">
-                      Master Data
-                    </h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      Kelola kategori & item keuangan
-                    </p>
-                  </div>
-                  <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <BarChart3 className="h-8 w-8 text-green-600 dark:text-green-400 mx-auto mb-2" />
-                    <h4 className="font-medium text-gray-900 dark:text-white">
-                      Anggaran
-                    </h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      Rencana anggaran per periode
-                    </p>
-                  </div>
-                  <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <Activity className="h-8 w-8 text-purple-600 dark:text-purple-400 mx-auto mb-2" />
-                    <h4 className="font-medium text-gray-900 dark:text-white">
-                      Monitoring
-                    </h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      Pantau realisasi anggaran
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ) : isLoading ? (
-          <LoadingScreen isLoading={true} message="Memuat dashboard keuangan..." />
-        ) : (
-          <>
-            {/* Realisasi vs Target Comparison Section */}
-            {statistics && realisasiSummary && (
-              <Card className="mb-6 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border-purple-200 dark:border-purple-700">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-purple-700 dark:text-purple-300">
-                    <BarChart3 className="h-6 w-6 mr-2" />
-                    Perbandingan Target vs Realisasi
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Total Target */}
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-purple-200 dark:border-purple-700">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                          Total Target Anggaran
-                        </span>
-                        <Target className="h-5 w-5 text-blue-500" />
-                      </div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {formatRupiah(statistics.totalTargetFromSummary)}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {realisasiSummary.summary?.totalItems || 0} item
-                        anggaran
-                      </div>
-                    </div>
+          <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
+            <LayoutDashboard className="h-16 w-16 text-gray-300 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Pilih Periode Anggaran</h3>
+            <p className="text-gray-500">Silakan pilih periode di atas untuk melihat data.</p>
+          </div>
+        ) : isLoadingData ? (
+          <div className="py-20 text-center">
+            <LoadingScreen message="Sedang mengagregasi data keuangan..." />
+          </div>
+        ) : dashboardData ? (
+          <div className="space-y-6 animate-in fade-in duration-500">
 
-                    {/* Total Realisasi */}
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-purple-200 dark:border-purple-700">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                          Total Realisasi
-                        </span>
+            {/* 1. Header with Breadcrumb-like indicator */}
+            <div className="flex items-center space-x-2 text-sm text-gray-500 mb-2">
+              <span className="font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Fokus:</span>
+              <span className="flex items-center">
+                {selectedParentId === "root" ? "Semua Bidang (Root)" : (
+                  <>
+                    <span className="font-medium text-gray-900 dark:text-white">{dashboardData.currentScopeItem.kode}</span>
+                    <ChevronRight className="h-4 w-4 mx-1" />
+                    <span className="font-medium text-gray-900 dark:text-white">{dashboardData.currentScopeItem.nama}</span>
+                  </>
+                )}
+              </span>
+            </div>
+
+            {/* 2. Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Target Card */}
+              <Card className="bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/10 dark:to-gray-800 border-blue-100 dark:border-blue-900/30">
+                <CardContent className="p-5">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Target</p>
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                        {formatRupiah(dashboardData.stats.target)}
+                      </h3>
+                    </div>
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                      <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Anggaran yang direncanakan
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Realisasi Card */}
+              <Card className="bg-gradient-to-br from-green-50 to-white dark:from-green-900/10 dark:to-gray-800 border-green-100 dark:border-green-900/30">
+                <CardContent className="p-5">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <p className="text-sm font-medium text-green-600 dark:text-green-400">Total Realisasi</p>
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                        {formatRupiah(dashboardData.stats.realisasi)}
+                      </h3>
+                    </div>
+                    <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                      <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    </div>
+                  </div>
+                  <div className="flex items-center text-xs">
+                    <span className={`font-semibold mr-1 ${dashboardData.stats.percentage >= 100 ? "text-green-600" : "text-yellow-600"}`}>
+                      {dashboardData.stats.percentage.toFixed(1)}%
+                    </span>
+                    <span className="text-gray-500">dari target tercapai</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Variance Card */}
+              <Card className="bg-white dark:bg-gray-800">
+                <CardContent className="p-5">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Selisih (Variance)</p>
+                      <h3 className={`text-2xl font-bold mt-1 ${dashboardData.stats.variance < 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {formatRupiah(Math.abs(dashboardData.stats.variance))}
+                      </h3>
+                    </div>
+                    <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                      {dashboardData.stats.variance < 0 ? (
                         <TrendingUp className="h-5 w-5 text-green-500" />
-                      </div>
-                      <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                        {formatRupiah(statistics.totalRealisasiAmount)}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {realisasiSummary.summary?.totalRealisasiCount || 0}{" "}
-                        transaksi realisasi
-                      </div>
-                    </div>
-
-                    {/* Achievement Percentage */}
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-purple-200 dark:border-purple-700">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                          Persentase Capaian
-                        </span>
-                        <Activity className="h-5 w-5 text-purple-500" />
-                      </div>
-                      <div
-                        className={`text-2xl font-bold ${
-                          statistics.realisasiAchievementPercentage >= 80
-                            ? "text-green-600 dark:text-green-400"
-                            : statistics.realisasiAchievementPercentage >= 50
-                              ? "text-yellow-600 dark:text-yellow-400"
-                              : "text-red-600 dark:text-red-400"
-                        }`}
-                      >
-                        {statistics.realisasiAchievementPercentage.toFixed(1)}%
-                      </div>
-                      <div className="mt-2">
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full transition-all ${
-                              statistics.realisasiAchievementPercentage >= 80
-                                ? "bg-green-500"
-                                : statistics.realisasiAchievementPercentage >=
-                                    50
-                                  ? "bg-yellow-500"
-                                  : "bg-red-500"
-                            }`}
-                            style={{
-                              width: `${Math.min(statistics.realisasiAchievementPercentage, 100)}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Variance Summary */}
-                  <div className="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-purple-200 dark:border-purple-700">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <Calculator className="h-5 w-5 text-purple-500 mr-2" />
-                        <span className="font-medium text-gray-700 dark:text-gray-300">
-                          Selisih (Variance)
-                        </span>
-                      </div>
-                      <div
-                        className={`text-xl font-bold ${
-                          (realisasiSummary.summary?.totalVarianceAmount ||
-                            0) >= 0
-                            ? "text-green-600 dark:text-green-400"
-                            : "text-red-600 dark:text-red-400"
-                        }`}
-                      >
-                        {formatRupiah(
-                          realisasiSummary.summary?.totalVarianceAmount || 0
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between mt-2 text-sm text-gray-600 dark:text-gray-400">
-                      <span>Target Tercapai:</span>
-                      <Badge
-                        variant={
-                          (realisasiSummary.summary?.itemsTargetAchieved ||
-                            0) >=
-                          (realisasiSummary.summary?.totalItems || 0) * 0.7
-                            ? "success"
-                            : "warning"
-                        }
-                      >
-                        {realisasiSummary.summary?.itemsTargetAchieved || 0}{" "}
-                        dari {realisasiSummary.summary?.totalItems || 0} item
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Financial Overview Stats */}
-            {statistics && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-                {/* Grand Total - Card Utama */}
-                <Card className="md:col-span-2 lg:col-span-1 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                      Grand Total Anggaran
-                    </CardTitle>
-                    <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-blue-900 dark:text-blue-100">
-                      {formatRupiah(statistics.grandTotalTarget)}
-                    </div>
-                    <div className="flex items-center text-xs text-blue-600 dark:text-blue-400 mt-2">
-                      <span className="mr-1">
-                        Actual: {formatRupiah(statistics.grandTotalActual)}
-                      </span>
-                    </div>
-                    <div className="mt-2">
-                      <div className="text-xs text-blue-600 dark:text-blue-400">
-                        {statistics.totalItems} item anggaran
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Target Penerimaan
-                    </CardTitle>
-                    <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {formatRupiah(statistics.totalPenerimaanTarget)}
-                    </div>
-                    <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                      <span className="text-green-600 dark:text-green-400 mr-1">
-                        Actual: {formatRupiah(statistics.totalPenerimaanActual)}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Target Pengeluaran
-                    </CardTitle>
-                    <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {formatRupiah(statistics.totalPengeluaranTarget)}
-                    </div>
-                    <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                      <span className="text-red-600 dark:text-red-400 mr-1">
-                        Actual:{" "}
-                        {formatRupiah(statistics.totalPengeluaranActual)}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Proyeksi Saldo
-                    </CardTitle>
-                    <Calculator className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {formatRupiah(statistics.saldoTarget)}
-                    </div>
-                    <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                      <span
-                        className={`mr-1 ${
-                          statistics.saldoActual >= 0
-                            ? "text-green-600 dark:text-green-400"
-                            : "text-red-600 dark:text-red-400"
-                        }`}
-                      >
-                        Actual: {formatRupiah(statistics.saldoActual)}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Pencapaian Target
-                    </CardTitle>
-                    <Target className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {statistics.achievementPercentage.toFixed(1)}%
-                    </div>
-                    <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                      <span
-                        className={`mr-1 ${getPercentageColor(statistics.achievementPercentage)}`}
-                      >
-                        dari total target
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
-            {/* Detailed Analytics */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-              {/* Budget Breakdown */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <PieChart className="h-5 w-5 mr-2" />
-                    Komposisi Anggaran
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {statistics && (
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                        <div className="flex items-center">
-                          <div className="w-3 h-3 bg-green-500 rounded-full mr-3" />
-                          <div>
-                            <span className="font-medium text-gray-900 dark:text-white">
-                              Penerimaan
-                            </span>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                              {statistics.totalPenerimaan} item
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-bold text-green-600 dark:text-green-400">
-                            {formatRupiah(statistics.totalPenerimaanTarget)}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            Target
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                        <div className="flex items-center">
-                          <div className="w-3 h-3 bg-red-500 rounded-full mr-3" />
-                          <div>
-                            <span className="font-medium text-gray-900 dark:text-white">
-                              Pengeluaran
-                            </span>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                              {statistics.totalPengeluaran} item
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-bold text-red-600 dark:text-red-400">
-                            {formatRupiah(statistics.totalPengeluaranTarget)}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            Target
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Hierarchy Analysis */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Building className="h-5 w-5 mr-2" />
-                    Analisis Hierarki
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {statistics && (
-                    <div className="space-y-3">
-                      {Object.entries(statistics.itemsByLevel).map(
-                        ([level, items]) => (
-                          <div
-                            key={level}
-                            className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
-                          >
-                            <div className="flex items-center">
-                              <div
-                                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white ${
-                                  level === "1"
-                                    ? "bg-blue-500"
-                                    : level === "2"
-                                      ? "bg-green-500"
-                                      : level === "3"
-                                        ? "bg-yellow-500"
-                                        : "bg-purple-500"
-                                }`}
-                              >
-                                L{level}
-                              </div>
-                              <div className="ml-3">
-                                <span className="font-medium text-gray-900 dark:text-white">
-                                  Level {level}
-                                </span>
-                                <div className="text-xs text-gray-500 dark:text-gray-400">
-                                  {items.length} item
-                                </div>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div className="font-medium text-gray-900 dark:text-white">
-                                {formatRupiah(
-                                  items.reduce(
-                                    (sum, item) =>
-                                      sum +
-                                      (parseFloat(item.nominalTarget) || 0),
-                                    0
-                                  )
-                                )}
-                              </div>
-                              <div className="text-xs text-gray-500 dark:text-gray-400">
-                                Total Target
-                              </div>
-                            </div>
-                          </div>
-                        )
+                      ) : (
+                        <TrendingDown className="h-5 w-5 text-red-500" />
                       )}
                     </div>
-                  )}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {dashboardData.stats.variance < 0 ? "Under Budget (Surplus/Efisien)" : "Over Budget / Belum Tercapai"}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Sub-items count */}
+              <Card className="bg-white dark:bg-gray-800">
+                <CardContent className="p-5">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Sub-Item</p>
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                        {dashboardData.childItems.length}
+                      </h3>
+                    </div>
+                    <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                      <LayoutDashboard className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Item dalam kategori ini
+                  </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Realisasi Detail per Item */}
-            {realisasiSummary?.items && realisasiSummary.items.length > 0 && (
-              <Card className="mb-8">
+            {/* 3. Charts Area */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Main Chart: Bar Chart Target vs Realisasi */}
+              <Card className="lg:col-span-2 shadow-sm">
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <PieChart className="h-5 w-5 mr-2" />
-                    Detail Realisasi per Item Anggaran
+                  <CardTitle className="flex items-center text-base">
+                    <BarChart3 className="h-5 w-5 mr-2 text-blue-500" />
+                    Performa per Sub-Item (Target vs Realisasi)
                   </CardTitle>
+                  <CardDescription>
+                    Membandingkan rencana dan realisasi untuk setiap bagian di bawah {dashboardData.currentScopeItem.nama}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {/* Desktop View */}
-                  <div className="hidden md:block overflow-x-auto">
-                    <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
-                      <thead>
-                        <tr className="bg-gray-100 dark:bg-gray-800">
-                          <th className="border border-gray-300 dark:border-gray-600 px-4 py-3 text-left text-sm font-semibold">
-                            Item Keuangan
-                          </th>
-                          <th className="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right text-sm font-semibold">
-                            Target
-                          </th>
-                          <th className="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right text-sm font-semibold">
-                            Realisasi
-                          </th>
-                          <th className="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right text-sm font-semibold">
-                            Variance
-                          </th>
-                          <th className="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center text-sm font-semibold">
-                            Capaian
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {realisasiSummary.items.map((item) => (
-                          <tr
-                            key={item.id}
-                            className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                          >
-                            <td className="border border-gray-300 dark:border-gray-600 px-4 py-3">
-                              <div className="flex items-center gap-2">
-                                <span className="font-mono text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">
-                                  {item.kode}
-                                </span>
-                                <span className="font-medium text-sm">
-                                  {item.nama}
-                                </span>
-                              </div>
-                            </td>
-                            <td className="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right">
-                              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                {formatRupiah(item.totalTarget)}
-                              </span>
-                            </td>
-                            <td className="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right">
-                              <span className="text-sm font-semibold text-green-600 dark:text-green-400">
-                                {formatRupiah(item.totalRealisasiAmount)}
-                              </span>
-                              <div className="text-xs text-gray-500 dark:text-gray-400">
-                                {item.totalRealisasiCount} transaksi
-                              </div>
-                            </td>
-                            <td className="border border-gray-300 dark:border-gray-600 px-4 py-3 text-right">
-                              <span
-                                className={`text-sm font-semibold ${
-                                  parseFloat(item.varianceAmount) >= 0
-                                    ? "text-green-600 dark:text-green-400"
-                                    : "text-red-600 dark:text-red-400"
-                                }`}
-                              >
-                                {formatRupiah(item.varianceAmount)}
-                              </span>
-                            </td>
-                            <td className="border border-gray-300 dark:border-gray-600 px-4 py-3 text-center">
-                              <div className="flex flex-col items-center gap-1">
-                                <Badge
-                                  variant={
-                                    item.achievementPercentage >= 100
-                                      ? "success"
-                                      : item.achievementPercentage >= 70
-                                        ? "warning"
-                                        : "secondary"
-                                  }
-                                >
-                                  {item.achievementPercentage.toFixed(1)}%
-                                </Badge>
-                                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 max-w-[80px]">
-                                  <div
-                                    className={`h-1.5 rounded-full ${
-                                      item.achievementPercentage >= 100
-                                        ? "bg-green-500"
-                                        : item.achievementPercentage >= 70
-                                          ? "bg-yellow-500"
-                                          : "bg-red-500"
-                                    }`}
-                                    style={{
-                                      width: `${Math.min(item.achievementPercentage, 100)}%`,
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Mobile View */}
-                  <div className="md:hidden space-y-4">
-                    {realisasiSummary.items.map((item) => (
-                      <div
-                        key={item.id}
-                        className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm"
+                  <div className="h-[350px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={dashboardData.barChartData}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
                       >
-                        {/* Header */}
-                        <div className="mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="inline-block px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono text-gray-600 dark:text-gray-300">
-                              {item.kode}
-                            </span>
-                          </div>
-                          <h3 className="font-semibold text-sm text-gray-900 dark:text-gray-100">
-                            {item.nama}
-                          </h3>
-                        </div>
-
-                        {/* Financial Data */}
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs text-gray-600 dark:text-gray-400">
-                              Target:
-                            </span>
-                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                              {formatRupiah(item.totalTarget)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs text-gray-600 dark:text-gray-400">
-                              Realisasi:
-                            </span>
-                            <div className="text-right">
-                              <span className="text-sm font-semibold text-green-600 dark:text-green-400 block">
-                                {formatRupiah(item.totalRealisasiAmount)}
-                              </span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {item.totalRealisasiCount} transaksi
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs text-gray-600 dark:text-gray-400">
-                              Variance:
-                            </span>
-                            <span
-                              className={`text-sm font-semibold ${
-                                parseFloat(item.varianceAmount) >= 0
-                                  ? "text-green-600 dark:text-green-400"
-                                  : "text-red-600 dark:text-red-400"
-                              }`}
-                            >
-                              {formatRupiah(item.varianceAmount)}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Achievement Progress */}
-                        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-xs text-gray-600 dark:text-gray-400">
-                              Capaian:
-                            </span>
-                            <Badge
-                              variant={
-                                item.achievementPercentage >= 100
-                                  ? "success"
-                                  : item.achievementPercentage >= 70
-                                    ? "warning"
-                                    : "secondary"
-                              }
-                            >
-                              {item.achievementPercentage.toFixed(1)}%
-                            </Badge>
-                          </div>
-                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                            <div
-                              className={`h-2 rounded-full transition-all ${
-                                item.achievementPercentage >= 100
-                                  ? "bg-green-500"
-                                  : item.achievementPercentage >= 70
-                                    ? "bg-yellow-500"
-                                    : "bg-red-500"
-                              }`}
-                              style={{
-                                width: `${Math.min(item.achievementPercentage, 100)}%`,
-                              }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
+                        <XAxis
+                          dataKey="name"
+                          angle={-45}
+                          textAnchor="end"
+                          interval={0}
+                          height={60}
+                          tick={{ fontSize: 11 }}
+                        />
+                        <YAxis
+                          tickFormatter={(valor) => new Intl.NumberFormat("id-ID", { notation: "compact" }).format(valor)}
+                          tick={{ fontSize: 11 }}
+                        />
+                        <Tooltip
+                          formatter={(value) => formatRupiah(value)}
+                          labelStyle={{ color: "black" }}
+                        />
+                        <Legend verticalAlign="top" height={36} />
+                        <Bar name="Target Anggaran" dataKey="target" fill="#94a3b8" radius={[4, 4, 0, 0]} />
+                        <Bar name="Realisasi" dataKey="realisasi" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
                 </CardContent>
               </Card>
-            )}
 
-            {/* Detail Item Summary */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <BarChart3 className="h-5 w-5 mr-2" />
-                  Detail Item Anggaran
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {/* Desktop View */}
-                <div className="hidden md:block space-y-4">
-                  {itemData &&
-                    itemData.items &&
-                    itemData.items.length > 0 &&
-                    itemData.items.map((item, index) => {
-                      // Calculate indentation based on level
-                      const level = item.level || 1;
-                      const indentClass =
-                        level > 1 ? `ml-${(level - 1) * 8}` : "";
+              {/* Composition Chart: Donut */}
+              <Card className="shadow-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-base">
+                    <PieIcon className="h-5 w-5 mr-2 text-green-500" />
+                    Komposisi Realisasi
+                  </CardTitle>
+                  <CardDescription>
+                    Proporsi penyerapan dana
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[300px] w-full relative">
+                    {dashboardData.compositionData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={dashboardData.compositionData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={100}
+                            paddingAngle={2}
+                            dataKey="value"
+                          >
+                            {dashboardData.compositionData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value) => formatRupiah(value)} />
+                          <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: "10px", marginTop: "10px" }} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-gray-400 text-sm">
+                        Belum ada data realisasi
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
-                      return (
-                        <div
-                          key={item.id || index}
-                          className={`flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${indentClass}`}
-                        >
-                          <div className="flex items-center space-x-4">
-                            {/* Hierarchy Indicator */}
-                            {level > 1 && (
-                              <div className="flex items-center">
-                                <div className="w-6 h-0.5 bg-gray-300 dark:bg-gray-600" />
-                              </div>
-                            )}
-                            <div
-                              className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white ${
-                                item.level === 1
-                                  ? "bg-blue-500"
-                                  : item.level === 2
-                                    ? "bg-green-500"
-                                    : item.level === 3
-                                      ? "bg-yellow-500"
-                                      : "bg-purple-500"
-                              }`}
-                            >
-                              {item.kode}
-                            </div>
-                            <div>
-                              <h4 className="font-medium text-gray-900 dark:text-white">
-                                {item.nama}
-                              </h4>
-                              <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
-                                <span>Level {item.level}</span>
-                                <span>•</span>
-                                <span>{item.kategori?.nama || "Unknown"}</span>
-                                {item.parent && (
-                                  <>
-                                    <span>•</span>
-                                    <span>Parent: {item.parent.nama}</span>
-                                  </>
-                                )}
-                              </div>
-                              {item.deskripsi && (
-                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                                  {item.deskripsi}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-bold text-lg text-gray-900 dark:text-white">
-                              {formatRupiah(item.totalTarget)}
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              Target
-                            </div>
-                            <div className="text-sm text-green-600 dark:text-green-400">
-                              Actual: {formatRupiah(item.nominalActual)}
-                            </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                              {item.targetFrekuensi} {item.satuanFrekuensi} ×{" "}
-                              {formatRupiah(item.nominalSatuan)}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
+            {/* 4. Detailed Table */}
+            <Card className="shadow-sm overflow-hidden">
+              <CardHeader className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">Rincian Data: {dashboardData.currentScopeItem.nama}</CardTitle>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => router.push(`/admin/keuangan/item?periodeId=${selectedPeriode}`)}
+                  >
+                    Kelola Data Master <ArrowRight className="ml-2 h-3 w-3" />
+                  </Button>
                 </div>
-
-                {/* Mobile View */}
-                <div className="md:hidden space-y-3">
-                  {itemData &&
-                    itemData.items &&
-                    itemData.items.length > 0 &&
-                    itemData.items.map((item, index) => {
-                      const level = item.level || 1;
-                      // Use padding instead of margin for mobile
-                      const paddingClass =
-                        level > 1 ? `pl-${(level - 1) * 4}` : "";
-
-                      return (
-                        <div
-                          key={item.id || index}
-                          className={`border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800 shadow-sm ${paddingClass}`}
-                        >
-                          {/* Header with Level & Code */}
-                          <div className="flex items-center gap-3 mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
-                            {/* Hierarchy Indicator for Mobile */}
-                            {level > 1 && (
-                              <div className="flex items-center">
-                                <div className="w-4 h-0.5 bg-gray-300 dark:bg-gray-600" />
-                              </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 font-medium border-b border-gray-200 dark:border-gray-700">
+                      <tr>
+                        <th className="px-4 py-3 text-left">Kode</th>
+                        <th className="px-4 py-3 text-left">Item Anggaran</th>
+                        <th className="px-4 py-3 text-right">Target (Roll-up)</th>
+                        <th className="px-4 py-3 text-right">Realisasi (Roll-up)</th>
+                        <th className="px-4 py-3 text-center">% Capaian</th>
+                        <th className="px-4 py-3 text-center">Status</th>
+                        <th className="px-4 py-3 text-center">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                      {dashboardData.childItems.map((item) => (
+                        <tr key={item.id} className="hover:bg-gray-50/80 dark:hover:bg-gray-800/50 transition-colors">
+                          <td className="px-4 py-3 font-mono text-xs">{item.kode}</td>
+                          <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
+                            {item.nama}
+                            {item.hasChildren && (
+                              <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                                Group
+                              </span>
                             )}
-                            <div
-                              className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 ${
-                                item.level === 1
-                                  ? "bg-blue-500"
-                                  : item.level === 2
-                                    ? "bg-green-500"
-                                    : item.level === 3
-                                      ? "bg-yellow-500"
-                                      : "bg-purple-500"
-                              }`}
-                            >
-                              {item.kode}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-sm text-gray-900 dark:text-white truncate">
-                                {item.nama}
-                              </h4>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-gray-600 dark:text-gray-300">
-                                  Level {item.level}
-                                </span>
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                  {item.kategori?.nama || "Unknown"}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Description */}
-                          {item.deskripsi && (
-                            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                              {item.deskripsi}
-                            </p>
-                          )}
-
-                          {/* Parent Info */}
-                          {item.parent && (
-                            <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-700 rounded text-xs">
-                              <span className="text-gray-500 dark:text-gray-400">
-                                Parent:{" "}
-                              </span>
-                              <span className="text-gray-900 dark:text-white font-medium">
-                                {item.parent.nama}
-                              </span>
-                            </div>
-                          )}
-
-                          {/* Financial Data */}
-                          <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs text-gray-600 dark:text-gray-400">
-                                Target:
-                              </span>
-                              <span className="text-base font-bold text-gray-900 dark:text-white">
-                                {formatRupiah(item.totalTarget)}
-                              </span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs text-gray-600 dark:text-gray-400">
-                                Actual:
-                              </span>
-                              <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                                {formatRupiah(item.nominalActual)}
-                              </span>
-                            </div>
-                            <div className="flex justify-between items-center text-xs">
-                              <span className="text-gray-500 dark:text-gray-400">
-                                Frekuensi:
-                              </span>
-                              <span className="text-gray-700 dark:text-gray-300">
-                                {item.targetFrekuensi} {item.satuanFrekuensi} ×{" "}
-                                {formatRupiah(item.nominalSatuan)}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
+                          </td>
+                          <td className="px-4 py-3 text-right font-medium text-gray-600 dark:text-gray-400">
+                            {formatRupiah(item.totalTarget)}
+                          </td>
+                          <td className="px-4 py-3 text-right font-bold text-gray-900 dark:text-white">
+                            {formatRupiah(item.totalRealisasiAmount)}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            {item.achievementPercentage.toFixed(1)}%
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <Badge variant={item.isTargetAchieved ? "success" : "secondary"} className="text-[10px]">
+                              {item.isTargetAchieved ? "Tercapai" : "Belum"}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            {item.hasChildren && (
+                              <button
+                                onClick={() => setSelectedParentId(item.id)}
+                                className="text-blue-600 hover:text-blue-700 text-xs font-medium inline-flex items-center hover:underline"
+                              >
+                                Drill Down <ChevronRight className="h-3 w-3 ml-0.5" />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                      {dashboardData.childItems.length === 0 && (
+                        <tr>
+                          <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                            Tidak ada sub-item data untuk level ini.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Quick Status & Management */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Quick Status */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Activity className="h-5 w-5 mr-2" />
-                    Status Periode
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">
-                        Total Item Anggaran:
-                      </span>
-                      <Badge variant="outline">
-                        {statistics?.totalItems || 0}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">
-                        Status Periode:
-                      </span>
-                      <Badge
-                        variant={
-                          selectedPeriodeData?.status === "AKTIF"
-                            ? "success"
-                            : "secondary"
-                        }
-                      >
-                        {selectedPeriodeData?.status || "Unknown"}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">
-                        Max Level Hierarki:
-                      </span>
-                      <Badge variant="outline">
-                        Level {statistics?.maxLevel || 0}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">
-                        Target Achievement:
-                      </span>
-                      <Badge
-                        variant={
-                          statistics?.achievementPercentage >= 80
-                            ? "success"
-                            : statistics?.achievementPercentage >= 50
-                              ? "warning"
-                              : "destructive"
-                        }
-                      >
-                        {statistics?.achievementPercentage.toFixed(1)}%
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Management Actions */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Settings className="h-5 w-5 mr-2" />
-                    Kelola Data Keuangan
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <Button
-                      className="w-full justify-start"
-                      variant="outline"
-                      onClick={() =>
-                        router.push(
-                          `/admin/keuangan/item?periodeId=${selectedPeriode}`
-                        )
-                      }
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      Lihat Detail Item Periode Ini
-                    </Button>
-
-                    <Button
-                      className="w-full justify-start"
-                      variant="outline"
-                      onClick={() =>
-                        router.push("/admin/data-master/keuangan/kategori")
-                      }
-                    >
-                      <Settings className="h-4 w-4 mr-2" />
-                      Kelola Kategori Keuangan
-                    </Button>
-
-                    <Button
-                      className="w-full justify-start"
-                      variant="outline"
-                      onClick={() =>
-                        router.push("/admin/data-master/keuangan/periode")
-                      }
-                    >
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Kelola Periode Anggaran
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </>
-        )}
+          </div>
+        ) : null}
       </div>
     </div>
   );
 }
-
-KeuanganDashboard.getLayout = function getLayout(page) {
-  return <AdminLayout>{page}</AdminLayout>;
-};
