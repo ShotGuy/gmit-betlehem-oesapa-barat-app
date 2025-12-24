@@ -1,86 +1,133 @@
-import { useTheme } from "@/contexts/ThemeContext";
-import { Facebook, Heart, Instagram, Youtube } from "lucide-react";
-import Image from "next/image";
+import { Facebook, Instagram, MapPin, Youtube } from "lucide-react";
 import Link from "next/link";
+
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function Footer() {
   const { isDark } = useTheme();
+  const logoSrc = isDark ? "/logo-dark.png" : "/logo-light.png";
 
   return (
-    <footer className="bg-gray-950 text-gray-300 pt-20 pb-10 border-t border-gray-900">
-      <div className="max-w-7xl mx-auto px-4 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-16">
-
-          {/* Brand Column */}
-          <div className="lg:col-span-1">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="relative w-12 h-12">
-                <Image
-                  src="/logo-GMIT.png"
-                  alt="Logo GMIT"
-                  fill
-                  className="object-contain"
-                />
-              </div>
+    <footer className="bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-t border-gray-200 dark:border-gray-800 transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-4 py-12 md:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+          {/* Column 1: Brand & Description */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <img alt="GMIT Logo" className="h-12 w-auto" src="/logo-GMIT.png" />
               <div>
-                <h3 className="font-bold text-white leading-none">GMIT Betlehem</h3>
-                <p className="text-sm text-gray-400">Oesapa Barat</p>
+                <h3 className="font-bold text-lg text-gray-900 dark:text-white leading-tight">
+                  GMIT Betlehem
+                </h3>
+                <h3 className="font-bold text-lg text-gray-900 dark:text-white leading-tight">
+                  Oesapa Barat
+                </h3>
               </div>
             </div>
-            <p className="text-gray-400 text-sm leading-relaxed mb-6">
-              Gereja yang memuliakan Tuhan, membangun jemaat yang dewasa, dan menjadi berkat bagi sesama.
+            <p className="text-sm leading-relaxed">
+              "Sungguh, alangkah baiknya dan indahnya, apabila saudara-saudara diam bersama dengan rukun!"
+              <br />
+              <span className="italic text-xs mt-1 block">- Mazmur 133:1</span>
             </p>
-            <div className="flex gap-4">
-              <a href="#" className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center hover:bg-amber-500 hover:text-white transition-all duration-300">
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center hover:bg-red-600 hover:text-white transition-all duration-300">
-                <Youtube className="w-5 h-5" />
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center hover:bg-pink-600 hover:text-white transition-all duration-300">
-                <Instagram className="w-5 h-5" />
-              </a>
+          </div>
+
+          {/* Column 2: Quick Links */}
+          <div>
+            <h4 className="font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-wider text-sm">
+              Tautan Cepat
+            </h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                  Beranda
+                </Link>
+              </li>
+              <li>
+                <Link href="/tentang" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                  Tentang JBOB
+                </Link>
+              </li>
+              <li>
+                <Link href="/sejarah" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                  Sejarah Gereja
+                </Link>
+              </li>
+              <li>
+                <Link href="/profil-pendeta" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                  Profil Pendeta
+                </Link>
+              </li>
+              <li>
+                <Link href="/galeri" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                  Galeri
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 3: Contact & Social */}
+          <div>
+            <h4 className="font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-wider text-sm">
+              Hubungi Kami
+            </h4>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-start gap-3">
+                <MapPin className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                <span>
+                  Jalan Pahlawan No. 12<br />
+                  Oesapa Barat, Kota Kupang<br />
+                  Nusa Tenggara Timur
+                </span>
+              </div>
+              {/* Placeholder for phone/mail if needed
+              <div className="flex items-center gap-3">
+                <Phone className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                <span>(0380) 123456</span>
+              </div>
+              */}
+            </div>
+
+            <div className="mt-6">
+              <h5 className="font-semibold text-gray-900 dark:text-white mb-3 text-sm">
+                Ikuti Kami
+              </h5>
+              <div className="flex gap-4">
+                <a
+                  href="https://www.facebook.com/GMITJIO/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gray-100 dark:bg-gray-800 p-2 rounded-full text-gray-600 dark:text-gray-400 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-500 dark:hover:text-white transition-all duration-300"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="w-5 h-5" />
+                </a>
+                <a
+                  href="https://www.instagram.com/gmit_imanuelopr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gray-100 dark:bg-gray-800 p-2 rounded-full text-gray-600 dark:text-gray-400 hover:bg-pink-600 hover:text-white dark:hover:bg-pink-500 dark:hover:text-white transition-all duration-300"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="w-5 h-5" />
+                </a>
+                <a
+                  href="https://www.youtube.com/@gmit_imanuel_oepura"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gray-100 dark:bg-gray-800 p-2 rounded-full text-gray-600 dark:text-gray-400 hover:bg-red-600 hover:text-white dark:hover:bg-red-500 dark:hover:text-white transition-all duration-300"
+                  aria-label="YouTube"
+                >
+                  <Youtube className="w-5 h-5" />
+                </a>
+              </div>
             </div>
           </div>
-
-          {/* Quick Links */}
-          <div>
-            <h4 className="font-serif text-lg font-bold text-white mb-6">Tautan Cepat</h4>
-            <ul className="space-y-3">
-              <li><Link href="/" className="hover:text-amber-500 transition-colors">Beranda</Link></li>
-              <li><Link href="/tentang" className="hover:text-amber-500 transition-colors">Tentang Kami</Link></li>
-              <li><Link href="/warta" className="hover:text-amber-500 transition-colors">Warta Jemaat</Link></li>
-              <li><Link href="/jadwal" className="hover:text-amber-500 transition-colors">Jadwal Ibadah</Link></li>
-            </ul>
-          </div>
-
-          {/* Contact Info */}
-          <div>
-            <h4 className="font-serif text-lg font-bold text-white mb-6">Hubungi Kami</h4>
-            <ul className="space-y-4 text-sm text-gray-400">
-              <li className="flex items-start gap-3">
-                <span className="text-amber-500">📍</span>
-                <span>Jln. Soverdi, Oesapa Barat, Kec. Kelapa Lima, Kota Kupang, NTT</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-amber-500">📞</span>
-                <span>(0380) 1234567</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-amber-500">📧</span>
-                <span>secretariat@gmitjbob.org</span>
-              </li>
-            </ul>
-          </div>
-
-
         </div>
 
         {/* Copyright */}
-        <div className="pt-8 border-t border-gray-900 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-          <p>© {new Date().getFullYear()} GMIT Betlehem Oesapa Barat. All rights reserved.</p>
-          <p className="flex items-center gap-1">
-            Dibuat dengan <Heart className="w-4 h-4 text-red-500 fill-current" /> untuk Kemuliaan Tuhan
+        <div className="border-t border-gray-200 dark:border-gray-800 mt-12 pt-8 text-center text-sm">
+          <p>
+            &copy; {new Date().getFullYear()} GMIT Betlehem Oesapa Barat. Hak Cipta Dilindungi.
           </p>
         </div>
       </div>

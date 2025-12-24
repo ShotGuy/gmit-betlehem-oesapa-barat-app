@@ -1,12 +1,11 @@
-import EmptyState from "@/components/common/EmptyState";
-import Images from "@/components/gallery/images";
-import PageTitle from "@/components/ui/PageTitle";
-import axios from "@/lib/axios";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-
-
+import EmptyState from "@/components/common/EmptyState";
+import Images from "@/components/gallery/images";
+import PageTitle from "@/components/ui/PageTitle";
+import { WaveBottom } from "@/components/ui/ShapeDividers";
+import axios from "@/lib/axios";
 
 export default function Galeri() {
   const [galleryItems, setGalleryItems] = useState([]);
@@ -22,6 +21,7 @@ export default function Galeri() {
         const response = await axios.get("/galeri");
 
         if (response.data.success && response.data.data.items.length > 0) {
+          // Pass the gallery items directly without flattening
           setGalleryItems(response.data.data.items);
         } else {
           setGalleryItems([]);
@@ -38,46 +38,46 @@ export default function Galeri() {
   }, []);
 
   return (
-    <div className="bg-white dark:bg-gray-950 transition-colors duration-500">
+    <div>
       <PageTitle
-        description="Galeri Kegiatan GMIT Jemaat Betlehem Oesapa Barat"
-        title="Galeri Kegiatan"
+        description="Galeri Kegiatan GMIT Jemaat Betlehem Oesapa Barat (JBOB) - Dokumentasi Ibadah Minggu, Cell Group, Sidi, Pernikahan, Baptis dan berbagai kegiatan gereja di Kupang, Nusa Tenggara Timur."
+        title="Galeri Kegiatan Gereja"
+        keywords="Galeri Gereja, Galeri GMIT, Galeri Jemaat, Foto Ibadah Minggu, Kegiatan Gereja Kupang, Dokumentasi Gereja, Galeri Kegiatan GMIT Betlehem Oesapa Barat, JBOB Galeri"
       />
 
-      {/* Elegant Arch Hero */}
-      <div className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
-        {/* Background Image with Arch Mask */}
-        <div className="absolute inset-0 z-0">
-          <Image
-            fill
-            priority
-            alt="Background"
-            src="/header/gallery.webp"
-            className="object-cover opacity-30 dark:opacity-20 blur-sm"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-white via-white/80 to-white dark:from-gray-950 dark:via-gray-950/80 dark:to-gray-950" />
-        </div>
 
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          <span className="inline-block py-1 px-3 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-sm font-bold tracking-wider uppercase mb-4">
-            Dokumentasi & Kenangan
-          </span>
-          <h1 className="font-serif text-5xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-6">
-            Galeri Kehidupan <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-amber-700">Jemaat Kami</span>
+      {/* New Hero Section (Image Background) */}
+      <div className="relative flex justify-center items-center h-[50vh] md:h-[60vh] overflow-hidden text-center text-white">
+        <Image
+          fill
+          priority
+          alt="Galeri Head"
+          className="object-cover brightness-50"
+          sizes="100vw"
+          src="/header/malam2.png"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-80"></div>
+
+        <div className="relative z-10 px-4 max-w-4xl mx-auto">
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 drop-shadow-md">
+            Galeri Kegiatan
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 text-lg lg:text-xl font-light">
-            Setiap momen adalah berkat. Berikut adalah rekaman sukacita dan pelayanan di GMIT Betlehem Oesapa Barat.
+          <p className="text-white/90 text-lg md:text-xl font-light">
+            Momen-momen berharga dalam persekutuan dan pelayanan di GMIT Betlehem Oesapa Barat
           </p>
         </div>
+
+        {/* Decorative Wave - Rotated 180deg */}
+        <WaveBottom className="fill-gray-50 dark:fill-gray-900 text-gray-50 dark:text-gray-900 rotate-180" />
       </div>
 
-      <div className="min-h-[50vh]">
+      {/* Main Content (No Search/Filter) */}
+      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen pt-12">
         {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="loading loading-lg text-amber-500" />
+          <div className="flex justify-center items-center min-h-[50vh]">
+            <div className="loading loading-xl text-primary" />
           </div>
-        ) : error && galleryItems.length === 0 ? (
+        ) : error ? (
           <EmptyState
             actionText="Coba Lagi"
             description={`Terjadi kesalahan: ${error}`}
@@ -86,7 +86,9 @@ export default function Galeri() {
             onAction={() => window.location.reload()}
           />
         ) : (
-          <Images galleryItems={galleryItems} />
+          <div className="animate-fade-in-up">
+            <Images galleryItems={galleryItems} />
+          </div>
         )}
       </div>
     </div>

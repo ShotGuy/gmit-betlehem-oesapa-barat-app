@@ -1,4 +1,4 @@
-import { Calendar, Clock, MapPin, Mic } from "lucide-react";
+import { BookOpen, Clock, MapPin, Mic, Users } from "lucide-react";
 
 export default function ScheduleCard({
   title,
@@ -9,71 +9,90 @@ export default function ScheduleCard({
   tema,
   firman,
   jenisIbadah,
-  rayon,
-  category = "sunday" // "sunday", "family", or "cell"
+  rayon
 }) {
-  const isSunday = category === "sunday";
+  // Parse date for visual display if possible (Expected format: "Minggu, 12 Januari 2025")
+  let day = "";
+  let month = "";
+  let dateNum = "";
+
+  if (date) {
+    const parts = date.split(' ');
+    if (parts.length >= 3) {
+      // Simple heuristic, might need adjustment based on real data format
+      // Assuming "Minggu, 12 Januari 2025" or similar
+      day = parts[0].replace(',', '').substring(0, 3).toUpperCase(); // MIN, SEN, ...
+      dateNum = parts[1]; // 12
+      month = parts[2].substring(0, 3).toUpperCase(); // JAN, FEB...
+    }
+  }
 
   return (
-    <div className={`group relative bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 h-full flex flex-col ${isSunday ? 'border-t-4 border-t-amber-500' : ''}`}>
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 overflow-hidden h-full flex flex-col group">
+      {/* Top Border Accent */}
+      <div className="h-1 w-full bg-blue-600 group-hover:bg-blue-500 transition-colors" />
 
-      {/* Top Decor (Arch Curve for Sunday items) */}
-      {isSunday && (
-        <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-amber-400 to-amber-600" />
-      )}
-
-      <div className="p-6 flex-1 flex flex-col">
-        {/* Header */}
-        <div className="mb-4">
-          <div className="flex items-center gap-2 mb-2">
-            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${isSunday ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>
-              {jenisIbadah || "Ibadah"}
+      <div className="p-5 flex flex-col h-full">
+        <div className="flex justify-between items-start mb-4">
+          {/* Title & Type */}
+          <div className="flex-1 pr-2">
+            <span className="inline-block px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-semibold mb-2">
+              {title}
             </span>
-            {rayon && (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                {rayon}
-              </span>
-            )}
+            <h3 className="text-gray-900 dark:text-white font-bold text-lg line-clamp-2 leading-tight">
+              {jenisIbadah || "Ibadah Raya"}
+            </h3>
           </div>
-          <h3 className="font-serif text-xl font-bold text-gray-900 dark:text-white leading-snug group-hover:text-amber-600 transition-colors">
-            {title}
-          </h3>
+
+          {/* Visual Date Box */}
+          <div className="flex-shrink-0 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-700 rounded-lg p-2 min-w-[60px] border border-gray-200 dark:border-gray-600">
+            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{month || 'JADWAL'}</span>
+            <span className="text-xl font-black text-gray-800 dark:text-gray-100">{dateNum || '?'}</span>
+            <span className="text-[10px] uppercase font-bold text-blue-600 dark:text-blue-400">{day || 'TBS'}</span>
+          </div>
         </div>
 
-        {/* Details List */}
-        <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300 flex-1">
-          <div className="flex items-start gap-3">
-            <Calendar className="w-4 h-4 mt-0.5 text-gray-400" />
-            <span className="font-medium">{date || 'Jadwal Rutin'}</span>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <Clock className="w-4 h-4 mt-0.5 text-amber-500" />
-            <span className="font-medium text-gray-900 dark:text-gray-100">{time || 'Waktu Menyesuaikan'}</span>
-          </div>
-
-          {(location || speaker) && (
-            <div className="pt-2 border-t border-gray-100 dark:border-gray-700 mt-2 space-y-2">
-              {location && (
-                <div className="flex items-start gap-3">
-                  <MapPin className="w-4 h-4 mt-0.5 text-gray-400" />
-                  <span>{location}</span>
-                </div>
-              )}
-              {speaker && (
-                <div className="flex items-start gap-3">
-                  <Mic className="w-4 h-4 mt-0.5 text-gray-400" />
-                  <span>{speaker}</span>
-                </div>
-              )}
+        <div className="space-y-3 flex-grow">
+          {time && (
+            <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+              <Clock className="w-4 h-4 mr-3 text-blue-500 flex-shrink-0" />
+              <span>{time}</span>
+            </div>
+          )}
+          {location && (
+            <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+              <MapPin className="w-4 h-4 mr-3 text-blue-500 flex-shrink-0" />
+              <span className="line-clamp-1">{location}</span>
+            </div>
+          )}
+          {speaker && (
+            <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+              <Mic className="w-4 h-4 mr-3 text-blue-500 flex-shrink-0" />
+              <span className="line-clamp-1 font-medium">{speaker}</span>
+            </div>
+          )}
+          {rayon && (
+            <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+              <Users className="w-4 h-4 mr-3 text-blue-500 flex-shrink-0" />
+              <span className="line-clamp-1">{rayon}</span>
             </div>
           )}
         </div>
 
-        {/* Theme/Sermon Footer */}
-        {tema && (
-          <div className="mt-5 p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600 italic text-sm text-gray-600 dark:text-gray-300">
-            "{tema}"
+        {/* Footer info (Theme/Firman) */}
+        {(tema || firman) && (
+          <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+            {tema && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 italic line-clamp-2 mb-1">
+                "{tema}"
+              </p>
+            )}
+            {firman && (
+              <div className="flex items-center text-xs font-semibold text-blue-600 dark:text-blue-400 mt-1">
+                <BookOpen className="w-3 h-3 mr-1.5" />
+                <span>{firman}</span>
+              </div>
+            )}
           </div>
         )}
       </div>

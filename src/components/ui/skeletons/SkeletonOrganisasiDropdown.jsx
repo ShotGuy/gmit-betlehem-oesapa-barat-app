@@ -1,6 +1,5 @@
-import React from "react";
 
-export default function SkeletonUppDropdown() {
+export default function SkeletonOrganisasiDropdown() {
   return (
     <ul className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-t-none p-2 dropdown-content right-0 mt-3 w-60 shadow-lg border border-gray-200 dark:border-gray-700 transition-colors duration-300 max-h-96  animate-pulse">
       {[...Array(4)].map((_, i) => (

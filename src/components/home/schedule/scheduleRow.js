@@ -1,17 +1,13 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
-
 import publicJadwalService from "../../../services/publicJadwalService";
-
 import ScheduleCard from "./scheduleCard";
 
 export default function ScheduleRow({
   jenisIbadah = null,
   kategori = null,
-  title = "Schedule",
+  title = "Jadwal Ibadah",
   limit = 6,
 }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,9 +28,14 @@ export default function ScheduleRow({
         const formattedSchedules =
           publicJadwalService.formatForScheduleRow(response);
 
-        setSchedules(formattedSchedules);
+        if (formattedSchedules.length === 0) {
+          setSchedules([]);
+        } else {
+          setSchedules(formattedSchedules);
+        }
       } catch (err) {
-        setError("Gagal memuat jadwal ibadah");
+        console.error("Error fetching schedules:", err);
+        // Fallback to empty
         setSchedules([]);
       } finally {
         setLoading(false);
@@ -44,112 +45,49 @@ export default function ScheduleRow({
     fetchSchedules();
   }, [jenisIbadah, kategori, limit, title]);
 
-  const nextSlide = () => {
-    if (schedules.length > 0) {
-      setCurrentIndex((prev) => (prev + 1) % schedules.length);
-    }
-  };
-
-  const prevSlide = () => {
-    if (schedules.length > 0) {
-      setCurrentIndex(
-        (prev) => (prev - 1 + schedules.length) % schedules.length
-      );
-    }
-  };
-
-  const getSlidePosition = (index) => {
-    const position =
-      (index - currentIndex + schedules.length) % schedules.length;
-
-    switch (position) {
-      case 0:
-        return "left-1/2 -translate-x-[160%] opacity-70 scale-90 lg:block hidden";
-      case 1:
-        return "left-1/2 -translate-x-1/2 opacity-100 scale-100 z-10";
-      case 2:
-        return "left-1/2 translate-x-[60%] opacity-70 scale-90 lg:block hidden";
-      default:
-        return "left-1/2 translate-x-[250%] opacity-0";
-    }
-  };
-
   // Show loading state
   if (loading) {
     return (
-      <div className="bg-black/20 py-2 overflow-hidden">
-        <div className="divider text-3xl font-bold text-white">{title}</div>
-        <div className="flex items-center justify-center h-80">
-          <div className="loading loading-spinner loading-lg text-white" />
-          <p className="ml-4 text-white">Memuat jadwal...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show error state
-  if (error) {
-    return (
-      <div className="bg-black/20 py-2 overflow-hidden">
-        <div className="divider text-3xl font-bold text-white">{title}</div>
-        <div className="flex items-center justify-center h-80">
-          <div className="text-red-300 text-center">
-            <svg
-              className="w-16 h-16 mx-auto mb-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-              />
-            </svg>
-            <p className="text-sm">{error}</p>
+      <div className="py-8 w-full">
+        <div className="max-w-7xl mx-auto px-4">
+          {/* Header Skeleton */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-3"></div>
+            <div className="h-1 w-24 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
+          </div>
+          {/* Grid Skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-64 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse"></div>
+            ))}
           </div>
         </div>
       </div>
     );
   }
 
-  // Don't render if no schedules
-  if (!schedules.length) {
-    return (
-      <div className="bg-black/20 py-2 overflow-hidden">
-        <div className="divider text-3xl font-bold text-white">{title}</div>
-        <div className="flex items-center justify-center h-80">
-          <div className="text-white text-center">
-            <p className="text-lg">
-              Tidak ada jadwal{" "}
-              {jenisIbadah ? jenisIbadah.toLowerCase() : "ibadah"} yang akan
-              datang
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+  // Don't render if error or no schedules
+  if (error || !schedules.length) {
+    // Optional: Return null or a subtle "No Schedule" message. 
+    // Usually best to hide the section if empty to avoid clutter.
+    return null;
   }
 
   return (
-    <div className="bg-black/20 py-2 overflow-hidden">
-      {/* Row title */}
-      <div className="divider text-3xl font-bold text-white">{title}</div>
+    <div className="py-12 w-full bg-white dark:bg-gray-900 transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-4 lg:px-8">
+        {/* Clean Consolidated Header */}
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold mb-4 text-gray-800 dark:text-white tracking-tight">
+            {title}
+          </h2>
+          <div className="w-20 h-1 bg-blue-600 mx-auto rounded-full" />
+        </div>
 
-      {/* Slider Container */}
-      <div className="relative mx-auto max-w-7xl px-4">
-        <div className="relative h-80 flex items-center justify-center overflow-hidden">
-          {schedules.map((schedule, index) => (
-            <div
-              key={schedule.id}
-              className={`
-                absolute h-72
-                w-4/5 lg:w-1/3 max-w-sm
-                transition-all duration-700 ease-in-out
-                ${getSlidePosition(index)}
-              `}
-            >
+        {/* Clean Grid Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {schedules.map((schedule) => (
+            <div key={schedule.id} className="h-full">
               <ScheduleCard
                 date={schedule.date}
                 firman={schedule.firman}
@@ -163,22 +101,6 @@ export default function ScheduleRow({
               />
             </div>
           ))}
-        </div>
-
-        {/* Navigation Buttons */}
-        <div className="flex justify-center mt-2 gap-4">
-          <button
-            className="w-12 h-12 rounded-full border border-gray-300 bg-white transition-colors duration-500 hover:bg-success inline-flex items-center justify-center shadow-lg"
-            onClick={prevSlide}
-          >
-            <ChevronLeft className="w-5 h-5 text-black" />
-          </button>
-          <button
-            className="w-12 h-12 rounded-full border border-gray-300 bg-white transition-colors duration-500 hover:bg-success inline-flex items-center justify-center shadow-lg"
-            onClick={nextSlide}
-          >
-            <ChevronRight className="w-5 h-5 text-black" />
-          </button>
         </div>
       </div>
     </div>

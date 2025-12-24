@@ -1,14 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useRef } from "react";
 
 import publicStatisticsService from "../../../services/publicStatisticsService";
 
-import StatPieChart from "./statPieChart";
 import { ChartSkeleton } from "../../ui/skeletons/SkeletonChart";
+import StatPieChart from "./statPieChart";
 
 export default function ChurchStatistics() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const scrollContainerRef = useRef(null);
 
   // Replace useEffect with TanStack Query
   const {
@@ -26,62 +26,26 @@ export default function ChurchStatistics() {
     retry: 3,
   });
 
-  // Calculate how many slides we have (showing 1 chart per slide)
-  const chartsPerSlide = 1;
-  const totalSlides = Math.ceil(chartData.length / chartsPerSlide);
+  const scroll = (direction) => {
+    if (scrollContainerRef.current) {
+      const { current } = scrollContainerRef;
+      // Scroll amount typically width of one card + gap
+      // Assuming card min-width 300px + gap 24px (gap-6) ~= 324px
+      const scrollAmount = 324;
 
-  // Auto-rotation effect (only create interval when we have data)
-  useState(() => {
-    if (totalSlides > 1) {
-      const interval = setInterval(() => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % totalSlides);
-      }, 10000);
-
-      return () => clearInterval(interval);
+      if (direction === "left") {
+        current.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+      } else {
+        current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+      }
     }
-  });
+  };
 
   // Show loading state
   if (isLoading) {
     return (
-      <div
-        className={`hidden lg:block bg-slate-800 lg:sticky lg:top-0 lg:h-screen overflow-hidden transition-all duration-300 ease-in-out ${
-          isCollapsed ? "w-12" : "w-full lg:w-1/5"
-        }`}
-      >
-        {/* Collapse/Expand Toggle Button */}
-        <button
-          className={`absolute top-1/2 -translate-y-1/2 z-10 bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-full shadow-lg transition-all duration-300 ${
-            isCollapsed ? "right-2" : "right-4"
-          }`}
-          onClick={() => setIsCollapsed(!isCollapsed)}
-        >
-          <svg
-            className={`w-4 h-4 transition-transform duration-300 ${
-              isCollapsed ? "rotate-0" : "rotate-180"
-            }`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M9 5l7 7-7 7"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-            />
-          </svg>
-        </button>
-
-        <div
-          className={`transition-all duration-300 ease-in-out h-full ${
-            isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
-          }`}
-        >
-          <div className="p-4 lg:p-6 lg:py-8 h-full">
-            <ChartSkeleton />
-          </div>
-        </div>
+      <div className="w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8">
+        <ChartSkeleton />
       </div>
     );
   }
@@ -89,62 +53,24 @@ export default function ChurchStatistics() {
   // Show error state
   if (error) {
     return (
-      <div
-        className={`hidden lg:block bg-slate-800 lg:sticky lg:top-0 lg:h-screen overflow-hidden transition-all duration-300 ease-in-out ${
-          isCollapsed ? "w-12" : "w-full lg:w-1/5"
-        }`}
-      >
-        {/* Collapse/Expand Toggle Button */}
-        <button
-          className={`absolute top-1/2 -translate-y-1/2 z-10 bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-full shadow-lg transition-all duration-300 ${
-            isCollapsed ? "right-2" : "right-4"
-          }`}
-          onClick={() => setIsCollapsed(!isCollapsed)}
-        >
+      <div className="w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 flex items-center justify-center min-h-[300px]">
+        <div className="text-red-400 text-center">
           <svg
-            className={`w-4 h-4 transition-transform duration-300 ${
-              isCollapsed ? "rotate-0" : "rotate-180"
-            }`}
+            className="w-16 h-16 mx-auto mb-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
             <path
-              d="M9 5l7 7-7 7"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
             />
           </svg>
-        </button>
-
-        <div
-          className={`transition-all duration-300 ease-in-out h-full ${
-            isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
-          }`}
-        >
-          <div className="p-4 lg:p-6 lg:py-8 h-full">
-            <div className="flex flex-col h-full w-full items-center justify-center min-h-[300px] lg:min-h-full">
-              <div className="text-red-400 text-center">
-                <svg
-                  className="w-16 h-16 mx-auto mb-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                  />
-                </svg>
-                <p className="text-sm text-gray-300">
-                  Gagal memuat statistik gereja
-                </p>
-              </div>
-            </div>
-          </div>
+          <p className="text-sm text-gray-300">
+            Gagal memuat statistik gereja
+          </p>
         </div>
       </div>
     );
@@ -156,97 +82,64 @@ export default function ChurchStatistics() {
   }
 
   return (
-    <div
-      className={`hidden lg:block bg-base-300 lg:sticky lg:top-0 lg:h-screen overflow-hidden transition-all duration-300 ease-in-out ${
-        isCollapsed ? "w-12" : "w-full lg:w-1/5"
-      }`}
-    >
-      {/* Collapse/Expand Toggle Button */}
-      <button
-        aria-label={isCollapsed ? "Expand statistics" : "Collapse statistics"}
-        className={`absolute top-1/2 -translate-y-1/2 z-10 bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-full shadow-lg transition-all duration-300 ${
-          isCollapsed ? "right-2" : "right-4"
-        }`}
-        onClick={() => setIsCollapsed(!isCollapsed)}
-      >
-        <svg
-          className={`w-4 h-4 transition-transform duration-300 ${
-            isCollapsed ? "rotate-0" : "rotate-180"
-          }`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+    <div className="w-full">
+      {/* Section Header */}
+      <div className="text-center mb-10">
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-4 transition-colors">
+          Statistik Gereja
+        </h2>
+        <div className="w-24 h-1 bg-blue-600 mx-auto rounded-full" />
+        <p className="text-gray-600 dark:text-gray-300 mt-4 max-w-2xl mx-auto transition-colors">
+          Gambaran umum data jemaat dan pelayanan GMIT Betlehem Oesapa Barat
+        </p>
+      </div>
+
+      {/* Carousel Container */}
+      <div className="relative group">
+        {/* Left Arrow Button */}
+        <button
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 dark:bg-gray-800/80 p-2 rounded-full shadow-lg hover:bg-white dark:hover:bg-gray-700 transition-all opacity-0 group-hover:opacity-100 disabled:opacity-0 focus:opacity-100"
+          onClick={() => scroll("left")}
+          aria-label="Scroll Left"
         >
-          <path
-            d="M9 5l7 7-7 7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-          />
-        </svg>
-      </button>
+          <ChevronLeft className="w-6 h-6 text-gray-800 dark:text-white" />
+        </button>
 
-      {/* Content */}
-      <div
-        className={`transition-all duration-300 ease-in-out h-full ${
-          isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
-        }`}
-      >
-        <div className="p-4 lg:p-6 lg:py-16 h-full">
-          <div className="flex flex-col h-full w-full">
-            {/* Chart container */}
-            <div className="flex-1 relative overflow-hidden min-h-[300px] lg:min-h-0">
-              <div
-                className="transition-transform duration-500 ease-in-out h-full"
-                style={{
-                  transform: `translateY(-${currentIndex * 100}%)`,
-                }}
-              >
-                {Array.from({ length: totalSlides }, (_, slideIndex) => {
-                  const startIdx = slideIndex * chartsPerSlide;
-                  const endIdx = startIdx + chartsPerSlide;
-                  const slideCharts = chartData.slice(startIdx, endIdx);
+        {/* Right Arrow Button */}
+        <button
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 dark:bg-gray-800/80 p-2 rounded-full shadow-lg hover:bg-white dark:hover:bg-gray-700 transition-all opacity-0 group-hover:opacity-100 disabled:opacity-0 focus:opacity-100"
+          onClick={() => scroll("right")}
+          aria-label="Scroll Right"
+        >
+          <ChevronRight className="w-6 h-6 text-gray-800 dark:text-white" />
+        </button>
 
-                  return (
-                    <div
-                      key={slideIndex}
-                      className="h-full w-full flex flex-col gap-4 lg:gap-6 py-2 lg:py-4"
-                    >
-                      {slideCharts.map((chart, chartIndex) => (
-                        <div
-                          key={`${slideIndex}-${chartIndex}`}
-                          className="flex-1 min-h-0"
-                        >
-                          <StatPieChart
-                            data={chart.data}
-                            size="small"
-                            title={chart.title}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })}
-              </div>
+        {/* Scrollable Container */}
+        <div
+          ref={scrollContainerRef}
+          className="flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory scrollbar-hide"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} // Hide scrollbar for Firefox and IE/Edge
+        >
+          {chartData.map((chart, index) => (
+            <div
+              key={index}
+              className="min-w-[300px] md:min-w-[350px] flex-shrink-0 bg-gray-50 dark:bg-gray-800 rounded-lg p-4 shadow-md snap-center border border-gray-100 dark:border-gray-700 transition-colors"
+            >
+              <StatPieChart
+                data={chart.data}
+                size="small"
+                title={chart.title}
+              />
             </div>
-
-            {/* Indicators at bottom */}
-            {totalSlides > 1 && (
-              <div className="flex justify-center space-x-2 py-4">
-                {Array.from({ length: totalSlides }, (_, index) => (
-                  <button
-                    key={index}
-                    aria-label={`Go to slide ${index + 1}`}
-                    className={`w-2 h-2 rounded-full transition-colors cursor-pointer ${
-                      index === currentIndex ? "bg-primary" : "bg-gray-400"
-                    }`}
-                    onClick={() => setCurrentIndex(index)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+          ))}
         </div>
+
+        {/* Hide scrollbar for Webkit browsers */}
+        <style jsx>{`
+          .scrollbar-hide::-webkit-scrollbar {
+              display: none;
+          }
+        `}</style>
       </div>
     </div>
   );

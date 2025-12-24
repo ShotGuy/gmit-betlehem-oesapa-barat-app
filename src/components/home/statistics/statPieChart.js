@@ -79,7 +79,7 @@ export default function StatPieChart({
   return (
     <div className="w-full h-full flex flex-col items-center justify-center">
       <h2
-        className={`text-center text-white dark:text-gray-200 ${sizing.titleClass} mb-1`}
+        className={`text-center text-gray-900 dark:text-gray-200 ${sizing.titleClass} mb-1 transition-colors`}
       >
         {title}
       </h2>
@@ -122,7 +122,7 @@ export default function StatPieChart({
                 style={{ backgroundColor: generateColor(index) }}
               />
               <span
-                className="text-white dark:text-gray-200"
+                className="text-gray-700 dark:text-gray-300 transition-colors"
                 style={{ fontSize: sizing.fontSize }}
               >
                 {entry.name}

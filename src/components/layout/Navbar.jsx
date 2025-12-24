@@ -4,7 +4,7 @@ import { ChevronRight, FileText, Home, LogOut, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-import SkeletonUppDropdown from "../ui/skeletons/SkeletonUppDropdown";
+import SkeletonOrganisasiDropdown from "../ui/skeletons/SkeletonOrganisasiDropdown";
 
 import { useAuth } from "@/contexts/AuthContext";
 // import { supabase } from "@/lib/supabaseClient";
@@ -31,7 +31,7 @@ export default function Navbar({
         {menuItems.map((item) => (
           <li key={item.name} className="flex items-center">
             <a
-              className="flex items-center hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-200"
+              className="flex items-center text-gray-700 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors duration-200"
               href={item.path}
             >
               {item.name}
@@ -41,14 +41,14 @@ export default function Navbar({
         {/* UPP Dropdown */}
         <li className="flex items-center">
           <details className="flex items-center">
-            <summary className="btn btn-ghost flex items-center px-4 py-2 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-white/10 dark:hover:bg-white/20 transition-all duration-200">
+            <summary className="btn btn-ghost flex items-center px-4 py-2 text-gray-700 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200">
               <FileText className="w-4 h-4 mr-2" />
-              UPP
+              Organisasi
               {/* <ChevronDown className="w-4 h-4 ml-2" /> */}
             </summary>
             <ul className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-t-none p-2 dropdown-content right-0 mt-3 w-72 shadow-lg border border-gray-200 dark:border-gray-700 transition-colors duration-300 max-h-96 overflow-y-auto">
               {uppLoading ? (
-                <SkeletonUppDropdown />
+                <SkeletonOrganisasiDropdown />
               ) : uppItems.length > 0 ? (
                 uppItems.map((kategori) => (
                   <li key={kategori.id}>
@@ -56,7 +56,7 @@ export default function Navbar({
                     <div className="font-semibold px-2 py-2 text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-600">
                       <Link
                         className="flex items-center hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
-                        href={`/upp/${kategori.nama
+                        href={`/organisasi/${kategori.nama
                           .toLowerCase()
                           .replace(/\s+/g, "-")}`}
                       >
@@ -73,7 +73,7 @@ export default function Navbar({
                             <li key={jenis.id}>
                               <Link
                                 className="flex items-center px-2 py-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 rounded"
-                                href={`/upp/${kategori.nama
+                                href={`/organisasi/${kategori.nama
                                   .toLowerCase()
                                   .replace(/\s+/g, "-")}/${jenis.nama
                                     .toLowerCase()
@@ -112,7 +112,7 @@ export default function Navbar({
                       src={user.avatar_url}
                     />
                   ) : (
-                    <User className="w-5 h-5 text-white" />
+                    <User className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   )}
                 </div>
               </summary>

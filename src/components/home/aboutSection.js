@@ -1,6 +1,6 @@
-import ScrollAnimation from "@/components/ui/animations/ScrollAnimation";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
 // Fetch SEJARAH content from API
 import kontenLandingPageService from "@/services/kontenLandingPageService";
@@ -32,6 +32,8 @@ const defaultHistory = [
 ];
 
 export default function AboutSection() {
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
 
   // Fetch dynamic content
   const { data: historyResponse } = useQuery({
@@ -52,89 +54,162 @@ export default function AboutSection() {
     }))
     : defaultHistory;
 
+  useEffect(() => {
+    // Add fallback timeout to ensure content shows even if IntersectionObserver fails
+    const fallbackTimer = setTimeout(() => {
+      setIsVisible(true);
+    }, 500);
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          clearTimeout(fallbackTimer);
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: "50px 0px", // Trigger earlier
+      }
+    );
+
+    const element = sectionRef.current;
+
+    if (element) {
+      observer.observe(element);
+    }
+
+    return () => {
+      clearTimeout(fallbackTimer);
+      if (element) {
+        observer.unobserve(element);
+      }
+    };
+  }, []);
+
   return (
     <div
-      className="py-16 lg:py-32 bg-white dark:bg-gray-950 transition-colors duration-500 overflow-hidden"
+      ref={sectionRef}
+      className="py-16 lg:py-24 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 transition-colors duration-300"
       id="about-section"
     >
       <div className="max-w-7xl mx-auto px-4 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
-
-          {/* Left - Content - Slide In From Left (fade-right) */}
-          <ScrollAnimation variant="fade-right" className="lg:col-span-6">
-            <div className="inline-block px-3 py-1 mb-6 text-xs font-bold tracking-widest text-amber-600 uppercase bg-amber-50 dark:bg-amber-900/20 rounded-full">
-              Tentang Kami
-            </div>
-
-            <h2 className="font-serif text-4xl lg:text-5xl font-bold mb-8 text-gray-900 dark:text-white leading-[1.2]">
-              Gereja yang Hidup <br />
-              <span className="italic text-gray-500 dark:text-gray-400">Dalam Kasih & Pelayanan</span>
+        {/* Header */}
+        <div className="text-center mb-16">
+          <div
+            className={`transition-all duration-1000 ${isVisible ? "opacity-100 transform translate-y-0" : "opacity-0 transform translate-y-8"}`}
+          >
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4 text-gray-800 dark:text-white">
+              Mengenal GMIT Betlehem Oesapa Barat
             </h2>
-
-            <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed mb-10 font-light">
-              GMIT Betlehem Oesapa Barat hadir sebagai rumah bagi setiap jiwa untuk bertumbuh, berakar, dan berbuah. Kami berkomitmen untuk menjadi saksi kasih Kristus di tengah masyarakat.
+            <div className="w-24 h-1 bg-blue-600 mx-auto mb-6 rounded-full" />
+            <p className="text-lg lg:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Gereja yang hidup dalam kasih, bertumbuh dalam iman, dan melayani
+              dengan hati
             </p>
+          </div>
+        </div>
 
-            {/* Timeline / Highlights - Minimalist */}
-            <div className="space-y-6 border-l-2 border-amber-100 dark:border-amber-900/30 pl-8 ml-2">
-              {displayHistory.slice(0, 3).map((item, index) => (
-                <div key={index} className="relative group">
-                  <div className="absolute -left-[39px] top-1.5 w-5 h-5 rounded-full border-4 border-white dark:border-gray-900 bg-amber-400 group-hover:bg-amber-600 transition-colors shadow-sm" />
-                  <h3 className="font-serif text-xl font-bold text-gray-900 dark:text-white mb-1 group-hover:text-amber-600 transition-colors">
-                    {item.judul}
-                  </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2">
-                    {item.konten}
-                  </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* Left - Content */}
+          <div
+            className={`transition-all duration-1000 delay-300 ${isVisible ? "opacity-100 transform translate-x-0" : "opacity-0 transform -translate-x-8"}`}
+          >
+            {/* Timeline Preview */}
+            <div className="space-y-8">
+              {displayHistory.map((item, index) => (
+                <div key={index} className="flex items-start space-x-4">
+                  <div className="flex-shrink-0">
+                    <div className={`w-12 h-12 bg-gradient-to-br ${item.colorFrom} ${item.colorTo} rounded-full flex items-center justify-center shadow-lg`}>
+                      <span className="text-white font-bold text-sm">{item.urutan}</span>
+                    </div>
+                  </div>
+                  <div className="pt-1">
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                      {item.judul}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                      {item.konten}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
 
             {/* CTA Buttons */}
-            <div className="mt-12 flex flex-col sm:flex-row gap-5">
-              <Link className="group" href="/tentang">
-                <div className="inline-flex items-center justify-center px-8 py-4 text-base font-medium text-white transition-all duration-300 bg-gray-900 border border-transparent rounded-full hover:bg-amber-600 hover:scale-105 shadow-xl">
+            <div className="mt-10 flex flex-col sm:flex-row gap-4">
+              <Link className="group" href="/about">
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-3 rounded-full font-semibold text-center hover:shadow-lg transform hover:scale-105 transition-all duration-300">
                   Pelajari Lebih Lanjut
+                  <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300 inline-block">
+                    →
+                  </span>
+                </div>
+              </Link>
+              <Link className="group" href="/sejarah">
+                <div className="border-2 border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400 px-8 py-3 rounded-full font-semibold text-center hover:bg-blue-600 hover:text-white dark:hover:bg-blue-400 dark:hover:text-white transform hover:scale-105 transition-all duration-300">
+                  Sejarah Lengkap
                 </div>
               </Link>
             </div>
-          </ScrollAnimation>
+          </div>
 
-          {/* Right - Visual Arch - Slide In From Right (fade-left) */}
-          <ScrollAnimation variant="fade-left" delay={200} className="lg:col-span-6">
-            <div className="relative mx-auto max-w-md lg:max-w-full">
-              {/* Background pattern similar to Hero */}
-              <div className="absolute inset-0 bg-amber-50 dark:bg-amber-900/20 rounded-t-[10rem] rounded-b-[2rem] transform rotate-3 scale-105 opacity-50" />
+          {/* Right - Visual */}
+          <div
+            className={`transition-all duration-1000 delay-500 ${isVisible ? "opacity-100 transform translate-x-0" : "opacity-0 transform translate-x-8"}`}
+          >
+            <div className="relative">
+              {/* Main Image */}
+              <div className="relative overflow-hidden rounded-2xl shadow-2xl">
+                <div className="relative w-full h-80 lg:h-96">
+                  <Image
+                    fill
+                    alt="GMIT Betlehem Oesapa Barat"
+                    className="object-cover transform hover:scale-110 transition-transform duration-700"
+                    sizes="(min-width: 1024px) 50vw, 100vw"
+                    src="/header/IMG_5867.JPG"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
-              {/* The Arch Image */}
-              <div className="relative z-10 aspect-[3/4] bg-gray-200 dark:bg-gray-800 rounded-t-[10rem] rounded-b-[2rem] overflow-hidden shadow-2xl border-4 border-white dark:border-gray-900">
-                <Image
-                  fill
-                  alt="GMIT Betlehem Oesapa Barat"
-                  className="object-cover transform hover:scale-110 transition-transform duration-[1.5s]"
-                  sizes="(min-width: 1024px) 50vw, 100vw"
-                  src="/header/IMG_5867.JPG"
-                />
-
-                {/* Overlay Info */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-8 pt-24 text-white">
-                  <div className="flex justify-between items-end border-b border-white/20 pb-4 mb-4">
-                    <div>
-                      <p className="text-xs uppercase tracking-widest text-amber-300 mb-1">Anggota Jemaat</p>
-                      <p className="font-serif text-3xl font-bold">500+</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs uppercase tracking-widest text-amber-300 mb-1">Tahun Melayani</p>
-                      <p className="font-serif text-3xl font-bold">70+</p>
-                    </div>
+                {/* Overlay Content */}
+                <div className="absolute bottom-6 left-6 right-6">
+                  <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl p-4 shadow-lg">
+                    <h4 className="font-bold text-gray-800 dark:text-white mb-2">
+                      GMIT Betlehem Oesapa Barat
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      "Bersama dalam kasih, bertumbuh dalam iman, melayani dalam pengharapan"
+                    </p>
                   </div>
-                  <p className="text-sm text-white/80 font-light italic">
-                    "Melayani dengan hati, bertumbuh dalam iman."
-                  </p>
                 </div>
               </div>
             </div>
-          </ScrollAnimation>
+          </div>
+        </div>
+
+        {/* Stats Section */}
+        <div
+          className={`mt-16 transition-all duration-1000 delay-700 ${isVisible ? "opacity-100 transform translate-y-0" : "opacity-0 transform translate-y-8"}`}
+        >
+          <div className="flex flex-wrap justify-center gap-8">
+            <div className="text-center">
+              <div className="bg-white dark:bg-gray-800 text-gray-800 dark:text-white rounded-2xl p-6 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border border-gray-200 dark:border-gray-700">
+                <div className="text-3xl font-bold mb-2">70+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">
+                  Tahun Melayani
+                </div>
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="bg-white dark:bg-gray-800 text-gray-800 dark:text-white rounded-2xl p-6 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border border-gray-200 dark:border-gray-700">
+                <div className="text-3xl font-bold mb-2">500+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">
+                  Anggota Jemaat
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
