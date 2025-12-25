@@ -14,6 +14,9 @@ const ProfilPendetaModal = ({
 }) => {
   const [formData, setFormData] = useState({
     nama: "",
+    status: "",
+    periode: "",
+    quote: "",
     foto: null,
   });
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -27,11 +30,14 @@ const ProfilPendetaModal = ({
       if (mode === "edit" && profile) {
         setFormData({
           nama: profile.nama || "",
+          status: profile.status || "",
+          periode: profile.periode || "",
+          quote: profile.quote || "",
           foto: null,
         });
         setPreviewUrl(profile.urlFoto || null);
       } else {
-        setFormData({ nama: "", foto: null });
+        setFormData({ nama: "", status: "", periode: "", quote: "", foto: null });
         setPreviewUrl(null);
       }
       setError("");
@@ -43,6 +49,9 @@ const ProfilPendetaModal = ({
       const formDataToSend = new FormData();
 
       formDataToSend.append("nama", data.nama);
+      formDataToSend.append("status", data.status);
+      formDataToSend.append("periode", data.periode);
+      formDataToSend.append("quote", data.quote);
 
       if (data.foto) {
         formDataToSend.append("foto", data.foto);
@@ -136,7 +145,7 @@ const ProfilPendetaModal = ({
   };
 
   const handleClose = () => {
-    setFormData({ nama: "", foto: null });
+    setFormData({ nama: "", status: "", periode: "", quote: "", foto: null });
     setPreviewUrl(null);
     setError("");
     onClose();
@@ -179,8 +188,47 @@ const ProfilPendetaModal = ({
               placeholder="Masukkan nama lengkap pendeta"
               type="text"
               value={formData.nama}
+              onChange={(value) =>
+                setFormData((prev) => ({ ...prev, nama: value }))
+              }
+            />
+          </div>
+
+          {/* Jabatan/Status & Periode */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <TextInput
+              label="Jabatan / Status"
+              placeholder="Contoh: Ketua Majelis"
+              disabled={mutation.isPending}
+              value={formData.status}
+              onChange={(value) =>
+                setFormData((prev) => ({ ...prev, status: value }))
+              }
+            />
+            <TextInput
+              label="Periode Pelayanan"
+              placeholder="Contoh: 2023 - 2027"
+              disabled={mutation.isPending}
+              value={formData.periode}
+              onChange={(value) =>
+                setFormData((prev) => ({ ...prev, periode: value }))
+              }
+            />
+          </div>
+
+          {/* Quote */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Kutipan Inspiratif (Quote)
+            </label>
+            <textarea
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              rows={3}
+              placeholder="Masukkan kutipan ayat atau kata mutiara..."
+              disabled={mutation.isPending}
+              value={formData.quote}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, nama: e.target.value }))
+                setFormData((prev) => ({ ...prev, quote: e.target.value }))
               }
             />
           </div>
