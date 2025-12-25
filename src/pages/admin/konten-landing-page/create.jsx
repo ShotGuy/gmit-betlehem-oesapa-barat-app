@@ -1,13 +1,13 @@
 import { useMutation } from "@tanstack/react-query";
 import { ArrowLeft, Globe, Save } from "lucide-react";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import { useState } from "react";
 
-import { showToast } from "@/utils/showToast";
-import kontenLandingPageService from "@/services/kontenLandingPageService";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { useUser } from "@/hooks/useUser";
+import kontenLandingPageService from "@/services/kontenLandingPageService";
+import { showToast } from "@/utils/showToast";
 
 export default function CreateKontenLandingPage() {
   const router = useRouter();
@@ -163,6 +163,7 @@ export default function CreateKontenLandingPage() {
                   <option value="MISI">MISI</option>
                   <option value="SEJARAH">SEJARAH</option>
                   <option value="HERO">HERO</option>
+                  <option value="TEMAGMIT">TEMA GMIT</option>
                   <option value="TENTANG">TENTANG</option>
                 </select>
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">

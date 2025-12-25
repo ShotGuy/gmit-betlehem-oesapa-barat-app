@@ -33,7 +33,7 @@ export default async function handler(req, res) {
     }
 
     // Validasi section enum
-    const validSections = ["VISI", "MISI", "SEJARAH", "HERO", "TENTANG"];
+    const validSections = ["VISI", "MISI", "SEJARAH", "HERO", "TENTANG", "TEMAGMIT"];
 
     if (!validSections.includes(section)) {
       return res.status(400).json(

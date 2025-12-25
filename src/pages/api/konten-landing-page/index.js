@@ -57,27 +57,27 @@ async function handleGet(req, res) {
       AND: [
         search
           ? {
-              OR: [
-                {
-                  judul: {
-                    contains: search,
-                    mode: "insensitive",
-                  },
+            OR: [
+              {
+                judul: {
+                  contains: search,
+                  mode: "insensitive",
                 },
-                {
-                  konten: {
-                    contains: search,
-                    mode: "insensitive",
-                  },
+              },
+              {
+                konten: {
+                  contains: search,
+                  mode: "insensitive",
                 },
-                {
-                  deskripsi: {
-                    contains: search,
-                    mode: "insensitive",
-                  },
+              },
+              {
+                deskripsi: {
+                  contains: search,
+                  mode: "insensitive",
                 },
-              ],
-            }
+              },
+            ],
+          }
           : {},
         { isActive: true },
         section ? { section: section } : {},
@@ -167,7 +167,7 @@ async function handlePost(req, res) {
     }
 
     // Validasi section enum
-    const validSections = ["VISI", "MISI", "SEJARAH", "HERO", "TENTANG"];
+    const validSections = ["VISI", "MISI", "SEJARAH", "HERO", "TENTANG", "TEMAGMIT"];
 
     if (!validSections.includes(section)) {
       return res.status(400).json(
@@ -257,7 +257,7 @@ async function handlePut(req, res) {
 
     if (section !== undefined) {
       // Validasi section enum
-      const validSections = ["VISI", "MISI", "SEJARAH", "HERO", "TENTANG"];
+      const validSections = ["VISI", "MISI", "SEJARAH", "HERO", "TENTANG", "TEMAGMIT"];
 
       if (!validSections.includes(section)) {
         return res.status(400).json(

@@ -1,28 +1,24 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Edit,
-  Plus,
-  Trash2,
-  Search,
-  Globe,
-  CheckCircle,
-  XCircle,
   Eye,
   EyeOff,
+  Globe,
+  Plus,
+  Search,
+  Trash2
 } from "lucide-react";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
-import { format } from "date-fns";
-import { id as idLocale } from "date-fns/locale";
+import { useState } from "react";
 
-import { showToast } from "@/utils/showToast";
-import kontenLandingPageService from "@/services/kontenLandingPageService";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import ButtonActions from "@/components/ui/ButtonActions";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import useConfirm from "@/hooks/useConfirm";
 import { useUser } from "@/hooks/useUser";
+import kontenLandingPageService from "@/services/kontenLandingPageService";
+import { showToast } from "@/utils/showToast";
 
 // Page Header Component
 function PageHeader({ title, description, breadcrumb, onAdd, showAddButton }) {
@@ -112,14 +108,14 @@ function SectionBadge({ section }) {
     MISI: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
     SEJARAH: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
     HERO: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
-    TENTANG: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300",
+    TEMAGMIT: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
+    TENTANG: "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-300",
   };
 
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-        colors[section] || "bg-gray-100 text-gray-800"
-      }`}
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors[section] || "bg-gray-100 text-gray-800"
+        }`}
     >
       {section}
     </span>
@@ -282,6 +278,7 @@ export default function KontenLandingPagePage() {
                 <option value="MISI">MISI</option>
                 <option value="SEJARAH">SEJARAH</option>
                 <option value="HERO">HERO</option>
+                <option value="TEMAGMIT">TEMA GMIT</option>
                 <option value="TENTANG">TENTANG</option>
               </select>
 

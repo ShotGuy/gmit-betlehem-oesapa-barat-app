@@ -12,7 +12,13 @@ import FadeInSection from "@/components/ui/FadeInSection";
 import PageTitle from "@/components/ui/PageTitle";
 import { WaveBottom, WaveTop } from "@/components/ui/ShapeDividers";
 
-export default function Home() {
+export default function Home({ heroData }) {
+  // Default values
+  const defaultTagline = "Bersama dalam kasih, bertumbuh dalam iman, melayani dalam pengharapan.";
+
+  // Only the Tagline is dynamic now
+  const heroTagline = heroData?.konten || defaultTagline;
+
   return (
     <>
       <PageTitle
@@ -34,19 +40,18 @@ export default function Home() {
               src="/header/sore3.png"
             />
             <div className="absolute flex flex-col p-6 top-1/4">
-              <p className="text-white text-xl font-bold drop-shadow-md">Selamat Datang di</p>
-              <h1 className="text-white text-4xl font-bold drop-shadow-lg mt-1">
+              <p className="text-white text-xl font-bold drop-shadow-md animate-slide-up">Selamat Datang di</p>
+              <h1 className="text-white text-4xl font-bold drop-shadow-lg mt-1 animate-slide-up-delay">
                 GMIT Betlehem Oesapa Barat
               </h1>
-              <p className="text-white text-sm mt-3 drop-shadow-md max-w-xs">
-                Bersama dalam kasih, bertumbuh dalam iman, melayani dalam
-                pengharapan.
+              <p className="text-white text-sm mt-3 drop-shadow-md max-w-xs animate-slide-up-delay-2">
+                {heroTagline}
               </p>
             </div>
           </div>
 
           {/* Floating CTA Section (Mobile) */}
-          <div className="relative z-20 -mt-16 px-4 mb-12">
+          <div className="relative z-20 -mt-16 px-4 mb-12 animate-fade-in">
             <div className="flex flex-col gap-4">
               <JoinUs />
               <DailyVerse />
@@ -112,15 +117,14 @@ export default function Home() {
               src="/header/sore3.png"
             />
             <div className="absolute flex flex-col p-16 top-1/3">
-              <p className="text-white text-4xl font-bold drop-shadow-lg">
+              <p className="text-white text-4xl font-bold drop-shadow-lg animate-slide-up">
                 Selamat Datang di
               </p>
-              <h1 className="text-white text-6xl font-bold drop-shadow-xl mt-2">
+              <h1 className="text-white text-6xl font-bold drop-shadow-xl mt-2 animate-slide-up-delay">
                 GMIT Betlehem Oesapa Barat
               </h1>
-              <p className="text-white text-lg mt-4 max-w-2xl drop-shadow-md">
-                Bersama dalam kasih, bertumbuh dalam iman, melayani dalam
-                pengharapan.
+              <p className="text-white text-lg mt-4 max-w-2xl drop-shadow-md animate-slide-up-delay-2">
+                {heroTagline}
               </p>
             </div>
 
@@ -218,4 +222,38 @@ export default function Home() {
       </div>
     </>
   );
+}
+
+// Server-side Data Fetching
+import prisma from "@/lib/prisma";
+
+export async function getStaticProps() {
+  try {
+    // Fetch Konten Landing Page for HERO/TAGLINE
+    const heroContent = await prisma.kontenLandingPage.findFirst({
+      where: {
+        section: "TEMAGMIT",
+        isActive: true,
+        isPublished: true,
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+    });
+
+    return {
+      props: {
+        heroData: heroContent ? JSON.parse(JSON.stringify(heroContent)) : null,
+      },
+      revalidate: 60, // Revalidate every 60 seconds
+    };
+  } catch (error) {
+    console.error("Error fetching hero content:", error);
+    return {
+      props: {
+        heroData: null,
+      },
+      revalidate: 60,
+    };
+  }
 }

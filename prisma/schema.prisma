@@ -815,6 +815,7 @@ enum TipeSection {
   SEJARAH
   HERO
   TENTANG
+  TEMAGMIT
 }
 
 // Model untuk konten landing page (visi, misi, sejarah, dll)
