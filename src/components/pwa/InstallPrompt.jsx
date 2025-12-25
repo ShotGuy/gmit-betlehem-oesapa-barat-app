@@ -97,14 +97,14 @@ export default function InstallPrompt() {
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
               <img
-                alt="GMIT JIO"
+                alt="GMIT JBOB"
                 className="w-8 h-8 rounded-lg"
                 src="/android-chrome-192x192.png"
               />
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
-                Install GMIT JIO
+                Install GMIT JBOB
               </h3>
               <p className="text-xs text-gray-600 dark:text-gray-300">
                 Akses lebih cepat dari layar utama

@@ -172,30 +172,30 @@ async function handlePost(req, res) {
         keluarga.jemaats[0]?.nama || `Bangunan ${keluarga.noBagungan}`;
 
       whatsappMessage = encodeURIComponent(
-        `🙏 *GMIT Imanuel Oepura*\n\n` +
-          `Halo ${user.username}!\n\n` +
-          `Anda telah diundang untuk melengkapi profil jemaat.\n\n` +
-          `👨‍👩‍👧‍👦 *Keluarga:* ${keluargaDisplayName}\n` +
-          `📍 *Rayon:* ${keluarga.rayon.namaRayon}\n\n` +
-          `👆 *KLIK LINK DI BAWAH INI:*\n` +
-          `${cleanUrl}\n\n` +
-          `⏰ Link berlaku 7 hari\n` +
-          `📝 Lengkapi data pribadi Anda` +
-          accountInfo +
-          `\n\nTerima kasih! 🙏`
+        `🙏 *GMIT Betlehem Oesapa Barat*\n\n` +
+        `Halo ${user.username}!\n\n` +
+        `Anda telah diundang untuk melengkapi profil jemaat.\n\n` +
+        `👨‍👩‍👧‍👦 *Keluarga:* ${keluargaDisplayName}\n` +
+        `📍 *Rayon:* ${keluarga.rayon.namaRayon}\n\n` +
+        `👆 *KLIK LINK DI BAWAH INI:*\n` +
+        `${cleanUrl}\n\n` +
+        `⏰ Link berlaku 7 hari\n` +
+        `📝 Lengkapi data pribadi Anda` +
+        accountInfo +
+        `\n\nTerima kasih! 🙏`
       );
     } else {
       whatsappMessage = encodeURIComponent(
-        `🙏 *GMIT Imanuel Oepura*\n\n` +
-          `Halo ${user.username}!\n\n` +
-          `Anda telah diundang untuk melengkapi profil jemaat.\n\n` +
-          `👆 *KLIK LINK DI BAWAH INI:*\n` +
-          `${cleanUrl}\n\n` +
-          `⏰ Link berlaku 7 hari\n` +
-          `📝 Lengkapi data pribadi Anda\n` +
-          `🔍 Siapkan Nomor KK (Kartu Keluarga) untuk mencari keluarga Anda` +
-          accountInfo +
-          `\n\nTerima kasih! 🙏`
+        `🙏 *GMIT Betlehem Oesapa Barat*\n\n` +
+        `Halo ${user.username}!\n\n` +
+        `Anda telah diundang untuk melengkapi profil jemaat.\n\n` +
+        `👆 *KLIK LINK DI BAWAH INI:*\n` +
+        `${cleanUrl}\n\n` +
+        `⏰ Link berlaku 7 hari\n` +
+        `📝 Lengkapi data pribadi Anda\n` +
+        `🔍 Siapkan Nomor KK (Kartu Keluarga) untuk mencari keluarga Anda` +
+        accountInfo +
+        `\n\nTerima kasih! 🙏`
       );
     }
 
@@ -234,10 +234,10 @@ async function handlePost(req, res) {
           },
           keluarga: keluarga
             ? {
-                noBagungan: keluarga.noBagungan,
-                namaKepalaKeluarga: keluarga.jemaats[0]?.nama || null,
-                rayon: keluarga.rayon.namaRayon,
-              }
+              noBagungan: keluarga.noBagungan,
+              namaKepalaKeluarga: keluarga.jemaats[0]?.nama || null,
+              rayon: keluarga.rayon.namaRayon,
+            }
             : null,
           expiresAt: new Date(
             Date.now() + 7 * 24 * 60 * 60 * 1000

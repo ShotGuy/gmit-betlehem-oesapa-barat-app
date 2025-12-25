@@ -1,13 +1,16 @@
 {
-  "name": "GMIT Jemaat Imanuel Oepura",
-  "short_name": "GMIT JIO",
-  "description": "GMIT Jemaat Imanuel Oepura (JIO) - Gereja Masehi Injili di Timor yang melayani jemaat dengan penuh kasih dan dedikasi.",
+  "name": "GMIT Jemaat Betlehem Oesapa Barat",
+  "short_name": "GMIT JBOB",
+  "description": "GMIT Jemaat Betlehem Oesapa Barat (JBOB) - Gereja Masehi Injili di Timor yang melayani jemaat dengan penuh kasih dan dedikasi.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2B5797",
   "orientation": "portrait-primary",
-  "categories": ["religion", "community"],
+  "categories": [
+    "religion",
+    "community"
+  ],
   "lang": "id",
   "icons": [
     {

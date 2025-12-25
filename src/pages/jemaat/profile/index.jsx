@@ -1,9 +1,9 @@
 import { User } from 'lucide-react';
 
-import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import ProfileGrid from '@/components/profile/ProfileGrid';
 import PageTitle from '@/components/ui/PageTitle';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function JemaatProfilePage() {
   const { user } = useAuth();
@@ -14,8 +14,8 @@ export default function JemaatProfilePage() {
 
   return (
     <ProtectedRoute allowedRoles="JEMAAT">
-      <PageTitle title="Profil - GMIT Imanuel Oepura" />
-      
+      <PageTitle title="Profil - GMIT Betlehem Oesapa Barat" />
+
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <header className="bg-white shadow">

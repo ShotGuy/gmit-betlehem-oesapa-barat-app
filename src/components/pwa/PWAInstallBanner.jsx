@@ -1,5 +1,5 @@
+import { Download, Smartphone, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Download, X, Smartphone } from "lucide-react";
 
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 
@@ -56,10 +56,10 @@ export default function PWAInstallBanner() {
             <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
               <Smartphone className="w-5 h-5" />
             </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm">
-                Install GMIT JIO
-              </h3>
+            <div className="flex-1">
+              <p className="text-white font-medium text-sm">
+                Install GMIT JBOB
+              </p>
               <p className="text-xs text-blue-100 mt-1">
                 {isIOS
                   ? "Tambahkan ke layar utama untuk akses cepat"

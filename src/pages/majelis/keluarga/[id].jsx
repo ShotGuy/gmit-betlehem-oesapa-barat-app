@@ -1,20 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
-  Calendar,
-  Home,
-  MapPin,
-  Phone,
-  User,
-  Users,
   Briefcase,
+  Calendar,
+  DollarSign,
   GraduationCap,
   Heart,
+  Home,
+  MapPin,
   Shield,
-  DollarSign
+  User,
+  Users
 } from "lucide-react";
 import { useRouter } from "next/router";
-import React from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -158,11 +156,10 @@ function JemaatCard({ jemaat }) {
               {jemaat.statusDalamKeluarga?.status || "-"}
             </span>
           </div>
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            jemaat.jenisKelamin 
-              ? "bg-pink-100 text-pink-800" 
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${jemaat.jenisKelamin
+              ? "bg-pink-100 text-pink-800"
               : "bg-blue-100 text-blue-800"
-          }`}>
+            }`}>
             {getGenderText(jemaat.jenisKelamin)}
           </span>
         </div>
@@ -356,7 +353,7 @@ export default function KeluargaDetailPage() {
   return (
     <>
       <PageTitle
-        description="Detail informasi keluarga dan anggota - GMIT Imanuel Oepura"
+        description="Detail informasi keluarga dan anggota - GMIT Betlehem Oesapa Barat"
         title={keluarga ? `Detail Keluarga Bangunan ${keluarga.noBagungan}` : "Detail Keluarga"}
       />
 
@@ -386,7 +383,7 @@ export default function KeluargaDetailPage() {
                     Informasi Keluarga
                   </h2>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
                     <label className="text-sm font-medium text-gray-500">
@@ -434,7 +431,7 @@ export default function KeluargaDetailPage() {
                     <div className="flex items-start">
                       <MapPin className="h-4 w-4 text-gray-400 mr-1 mt-0.5" />
                       <p className="text-sm text-gray-900">
-                        {keluarga.alamat ? 
+                        {keluarga.alamat ?
                           `${keluarga.alamat.jalan || ""} RT ${keluarga.alamat.rt || ""} RW ${keluarga.alamat.rw || ""}, ${keluarga.alamat.kelurahan?.nama || ""}, ${keluarga.alamat.kelurahan?.kecamatan?.nama || ""}, ${keluarga.alamat.kelurahan?.kecamatan?.kotaKab?.nama || ""}, ${keluarga.alamat.kelurahan?.kecamatan?.kotaKab?.provinsi?.nama || ""} ${keluarga.alamat.kelurahan?.kodePos || ""}`
                           : "-"
                         }

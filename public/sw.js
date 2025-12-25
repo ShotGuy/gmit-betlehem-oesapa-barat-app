@@ -1,11 +1,10 @@
-const CACHE_NAME = 'gmit-jio-v1.1';
-const STATIC_CACHE = 'gmit-jio-static-v1.1';
-const DYNAMIC_CACHE = 'gmit-jio-dynamic-v1.1';
+const CACHE_NAME = 'gmit-jbob-v1.0';
+const STATIC_CACHE = 'gmit-jbob-static-v1.0';
+const DYNAMIC_CACHE = 'gmit-jbob-dynamic-v1.0';
 
 // Assets to cache on install
 const STATIC_ASSETS = [
   '/',
-  '/sejarah',
   '/logo-GMIT.png',
   '/favicon.ico',
   '/android-chrome-192x192.png',
@@ -37,8 +36,8 @@ self.addEventListener('fetch', (event) => {
 
   // Skip cross-origin requests and chrome extensions
   if (request.url.startsWith('chrome-extension://') ||
-      request.url.includes('extension') ||
-      url.origin !== self.location.origin) {
+    request.url.includes('extension') ||
+    url.origin !== self.location.origin) {
     return;
   }
 
@@ -58,10 +57,10 @@ async function handleGetRequest(request) {
 
   // Static assets - cache first
   if (request.destination === 'image' ||
-      request.destination === 'script' ||
-      request.destination === 'style' ||
-      url.pathname.includes('/static/') ||
-      url.pathname.includes('.')) {
+    request.destination === 'script' ||
+    request.destination === 'style' ||
+    url.pathname.includes('/static/') ||
+    url.pathname.includes('.')) {
     return cacheFirst(request, STATIC_CACHE);
   }
 

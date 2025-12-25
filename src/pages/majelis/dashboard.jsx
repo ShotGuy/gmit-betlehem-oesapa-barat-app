@@ -12,10 +12,10 @@ import {
 import { useRouter } from "next/router";
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import DailyVerse from "@/components/dashboard/DailyVerse";
 import PageTitle from "@/components/ui/PageTitle";
 import { useAuth } from "@/contexts/AuthContext";
 import dashboardService from "@/services/dashboardService";
-import DailyVerse from "@/components/dashboard/DailyVerse";
 
 function MajelisDashboard() {
   const { user } = useAuth();
@@ -49,7 +49,7 @@ function MajelisDashboard() {
   return (
     <ProtectedRoute allowedRoles="MAJELIS">
       <PageTitle
-        description={`Dashboard untuk Majelis ${rayon.namaRayon || ""} - GMIT Imanuel Oepura`}
+        description={`Dashboard untuk Majelis ${rayon.namaRayon || ""} - GMIT Betlehem Oesapa Barat`}
         title="Dashboard Majelis"
       />
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
@@ -65,8 +65,8 @@ function MajelisDashboard() {
                   </h1>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {rayon.namaRayon
-                      ? `${rayon.namaRayon} - GMIT Imanuel Oepura`
-                      : "GMIT Imanuel Oepura"}
+                      ? `${rayon.namaRayon} - GMIT Betlehem Oesapa Barat`
+                      : "GMIT Betlehem Oesapa Barat"}
                   </p>
                 </div>
               </div>

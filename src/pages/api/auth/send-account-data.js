@@ -73,24 +73,23 @@ async function handlePost(req, res) {
     }
 
     // Create WhatsApp message
-    const message = `🔐 *Data Akun GMIT Imanuel Oepura*
+    const message = `🔐 *Data Akun GMIT Betlehem Oesapa Barat*
 
-Halo! Berikut adalah data akun Anda:
+Yth. Bapak/Ibu/Sdr/i *${user.username}*,
 
-👤 *Username:* ${user.username}
-📧 *Email:* ${user.email}
-🔑 *Password:* ${tempPassword || "oepura78"}
-👥 *Role:* ${user.role}${keluargaInfo}
+Berikut adalah data akun Anda untuk mengakses sistem informasi jemaat:
 
-🌐 *Link Login:* ${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/login
+👤 *Username*: ${user.username}
+🔑 *Password*: ${tempPassword}
 
-⚠️ *Penting:*
-- Harap segera login dan ubah password Anda
-- Jangan bagikan data akun ini kepada orang lain
-- Simpan data ini dengan aman
+Silakan login di: ${process.env.NEXT_PUBLIC_APP_URL}/login
 
-Terima kasih!
-GMIT Imanuel Oepura`;
+_Harap mengganti password Anda setelah login pertama kali demi keamanan akun._
+${keluargaInfo}
+
+Terima kasih,
+Tim Multimedia & Database
+GMIT Betlehem Oesapa Barat`;
 
     // Encode message for WhatsApp URL
     const encodedMessage = encodeURIComponent(message);

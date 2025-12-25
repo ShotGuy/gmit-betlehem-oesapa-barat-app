@@ -41,7 +41,7 @@ export default function JemaatKeluargaPage() {
 
   return (
     <ProtectedRoute allowedRoles="JEMAAT">
-      <PageTitle title="Keluarga - GMIT Imanuel Oepura" />
+      <PageTitle title="Keluarga - GMIT Betlehem Oesapa Barat" />
 
       <div className="min-h-screen bg-gray-50 dark:bg-gray-800">
         {/* Header */}
@@ -213,8 +213,8 @@ export default function JemaatKeluargaPage() {
                           <p className="text-sm text-gray-500">
                             {member.tanggalLahir
                               ? new Date(
-                                  member.tanggalLahir
-                                ).toLocaleDateString("id-ID")
+                                member.tanggalLahir
+                              ).toLocaleDateString("id-ID")
                               : "Tanggal lahir tidak diketahui"}
                           </p>
                         </div>

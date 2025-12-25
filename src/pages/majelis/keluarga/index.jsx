@@ -185,14 +185,14 @@ export default function MajelisKeluargaPage() {
     },
     ...(canCreate
       ? [
-          {
-            icon: UserPlus,
-            label: "Tambah Jemaat",
-            onClick: (item) =>
-              router.push(`/majelis/jemaat/create?keluargaId=${item.id}`),
-            variant: "default",
-          },
-        ]
+        {
+          icon: UserPlus,
+          label: "Tambah Jemaat",
+          onClick: (item) =>
+            router.push(`/majelis/jemaat/create?keluargaId=${item.id}`),
+          variant: "default",
+        },
+      ]
       : []),
   ];
 
@@ -226,8 +226,8 @@ export default function MajelisKeluargaPage() {
   return (
     <ProtectedRoute allowedRoles="MAJELIS">
       <PageTitle
-        description={`Kelola data keluarga di ${user?.majelis?.rayon?.namaRayon || "rayon Anda"} - GMIT Imanuel Oepura`}
-        title="Data Keluarga"
+        description={`Kelola data keluarga di ${user?.majelis?.rayon?.namaRayon || "rayon Anda"} - GMIT Betlehem Oesapa Barat`}
+        title="Data Keluarga Majelis"
       />
 
       <div className="space-y-6 p-4">
@@ -252,7 +252,7 @@ export default function MajelisKeluargaPage() {
           //               </Button>
           description={`Kelola data keluarga di ${user?.majelis?.rayon?.namaRayon || "rayon Anda"}`}
           title="Data Keluarga"
-          // onAdd={() => router.push("/majelis/keluarga/create")}
+        // onAdd={() => router.push("/majelis/keluarga/create")}
         />
 
         {/* Search and Filters */}

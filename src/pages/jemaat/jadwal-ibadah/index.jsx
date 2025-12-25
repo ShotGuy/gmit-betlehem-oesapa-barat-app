@@ -1,24 +1,24 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
+  Book,
   Calendar,
   Clock,
-  MapPin,
-  User,
-  Users,
-  Home,
-  Book,
   ExternalLink,
+  Home,
+  MapPin,
   Navigation,
   Target,
+  User,
+  Users,
 } from "lucide-react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
-import { useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
-import api from "@/lib/axios";
 import PageTitle from "@/components/ui/PageTitle";
+import { useAuth } from "@/contexts/AuthContext";
+import api from "@/lib/axios";
 
 
 export default function JemaatJadwalIbadahPage() {
@@ -120,7 +120,7 @@ export default function JemaatJadwalIbadahPage() {
 
   return (
     <ProtectedRoute allowedRoles="JEMAAT">
-      <PageTitle title="Jadwal Ibadah - GMIT Imanuel Oepura" />
+      <PageTitle title="Jadwal Ibadah - GMIT Betlehem Oesapa Barat" />
 
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
