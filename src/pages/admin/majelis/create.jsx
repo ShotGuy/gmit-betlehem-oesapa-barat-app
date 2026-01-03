@@ -10,8 +10,7 @@ import {
   MapPin,
   Phone,
   Shield,
-  User,
-  UserCheck,
+  UserCheck
 } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -20,6 +19,7 @@ import { useForm } from "react-hook-form";
 import HookForm from "@/components/form/HookForm";
 import AutoCompleteInput from "@/components/ui/inputs/AutoCompleteInput";
 import DatePicker from "@/components/ui/inputs/DatePicker";
+import JemaatSearchInput from "@/components/ui/inputs/JemaatSearchInput";
 import TextInput from "@/components/ui/inputs/TextInput";
 import PageTitle from "@/components/ui/PageTitle";
 import Stepper, {
@@ -63,7 +63,8 @@ export default function CreateMajelisPage() {
   const methods = useForm({
     resolver: zodResolver(majelisCreationSchema),
     defaultValues: {
-      namaLengkap: "",
+      idJemaat: "",
+      jemaatName: "", // For display only
       mulai: "",
       selesai: "",
       idRayon: router.query.rayon || "",
@@ -133,7 +134,7 @@ export default function CreateMajelisPage() {
   const getFieldsForStep = (step) => {
     switch (step) {
       case 1:
-        return ["namaLengkap", "mulai", "jenisJabatanId"];
+        return ["idJemaat", "mulai", "jenisJabatanId"];
       case 2:
         return []; // Permission step - optional
       case 3:
@@ -216,6 +217,9 @@ export default function CreateMajelisPage() {
       // Clean up the data before sending
       const formattedData = { ...data };
 
+      // Remove display-only fields
+      delete formattedData.jemaatName;
+
       // Format WhatsApp number with +62 prefix
       if (formattedData.noWhatsapp && formattedData.noWhatsapp !== "") {
         formattedData.noWhatsapp = formatWhatsAppNumber(
@@ -281,12 +285,14 @@ export default function CreateMajelisPage() {
         return (
           <StepContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <TextInput
+              <JemaatSearchInput
                 required
-                label="Nama Lengkap"
-                leftIcon={<User className="w-4 h-4" />}
-                name="namaLengkap"
-                placeholder="Masukkan nama lengkap majelis"
+                label="Cari Jemaat"
+                name="idJemaat"
+                placeholder="Ketik nama jemaat..."
+                onSelect={(jemaat) => {
+                  setValue("jemaatName", jemaat ? jemaat.nama : "");
+                }}
               />
 
               <DatePicker
@@ -540,10 +546,10 @@ export default function CreateMajelisPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-gray-600 dark:text-gray-400">
-                        Nama Lengkap:
+                        Nama Jemaat:
                       </span>
                       <span className="font-medium text-gray-900 dark:text-white">
-                        {watchedValues.namaLengkap}
+                        {watchedValues.jemaatName}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -608,48 +614,48 @@ export default function CreateMajelisPage() {
                 watchedValues.canCreate ||
                 watchedValues.canDelete ||
                 watchedValues.canManageRayon) && (
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                  <h4 className="font-medium text-gray-700 dark:text-gray-200 mb-2">
-                    Permission
-                  </h4>
-                  <div className="space-y-1">
-                    {watchedValues.isUtama && (
-                      <p className="text-sm text-purple-600 dark:text-purple-400">
-                        ✓ Majelis Utama (Full Access)
-                      </p>
-                    )}
-                    {!watchedValues.isUtama && (
-                      <>
-                        {watchedValues.canView && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            ✓ View
-                          </p>
-                        )}
-                        {watchedValues.canEdit && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            ✓ Edit
-                          </p>
-                        )}
-                        {watchedValues.canCreate && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            ✓ Create
-                          </p>
-                        )}
-                        {watchedValues.canDelete && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            ✓ Delete
-                          </p>
-                        )}
-                        {watchedValues.canManageRayon && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            ✓ Kelola Rayon
-                          </p>
-                        )}
-                      </>
-                    )}
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                    <h4 className="font-medium text-gray-700 dark:text-gray-200 mb-2">
+                      Permission
+                    </h4>
+                    <div className="space-y-1">
+                      {watchedValues.isUtama && (
+                        <p className="text-sm text-purple-600 dark:text-purple-400">
+                          ✓ Majelis Utama (Full Access)
+                        </p>
+                      )}
+                      {!watchedValues.isUtama && (
+                        <>
+                          {watchedValues.canView && (
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              ✓ View
+                            </p>
+                          )}
+                          {watchedValues.canEdit && (
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              ✓ Edit
+                            </p>
+                          )}
+                          {watchedValues.canCreate && (
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              ✓ Create
+                            </p>
+                          )}
+                          {watchedValues.canDelete && (
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              ✓ Delete
+                            </p>
+                          )}
+                          {watchedValues.canManageRayon && (
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              ✓ Kelola Rayon
+                            </p>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg transition-colors duration-300">
                 <p className="text-sm text-blue-800 dark:text-blue-200">

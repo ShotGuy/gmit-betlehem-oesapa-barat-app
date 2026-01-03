@@ -13,8 +13,8 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 
-import HeaderDateTimeWidget from "../HeaderDateTimeWidget";
 import CommandPalette from "@/components/CommandPalette";
+import HeaderDateTimeWidget from "../HeaderDateTimeWidget";
 
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import { getRoleConfig } from "@/config/navigationItem";
@@ -38,6 +38,7 @@ export default function AppNavbar({
   const { user: authUser } = useUser();
   const config = getRoleConfig(
     authUser ? authUser.role.toLowerCase() : role.toLowerCase(),
+    authUser
   );
   const LogoIcon = config.logoIcon;
   // console.log(authUser)
@@ -73,10 +74,14 @@ export default function AppNavbar({
   };
 
   const toggleSubmenu = (href) => {
-    setExpandedMenus((prev) => ({
-      ...prev,
-      [href]: !prev[href],
-    }));
+    setExpandedMenus((prev) => {
+      // If the clicked menu is already open, close it (empty object or remove specific key)
+      if (prev[href]) {
+        return {};
+      }
+      // Otherwise, close all others and open only this one
+      return { [href]: true };
+    });
   };
 
   // Tooltip component for collapsed sidebar
@@ -163,10 +168,9 @@ export default function AppNavbar({
             <div
               className={`
                 flex items-center ${isCollapsed ? "justify-center" : "justify-between"} px-3 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 cursor-pointer group
-                ${
-                  isParentActiveState
-                    ? "bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/40 dark:to-blue-900/20 text-blue-700 dark:text-blue-200 shadow-sm"
-                    : "text-gray-700 dark:text-gray-200 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100/50 dark:hover:from-gray-700/50 dark:hover:to-gray-700/20"
+                ${isParentActiveState
+                  ? "bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/40 dark:to-blue-900/20 text-blue-700 dark:text-blue-200 shadow-sm"
+                  : "text-gray-700 dark:text-gray-200 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100/50 dark:hover:from-gray-700/50 dark:hover:to-gray-700/20"
                 }
               `}
               onClick={() => !isCollapsed && toggleSubmenu(item.href)}
@@ -175,19 +179,17 @@ export default function AppNavbar({
                 className={`flex items-center ${isCollapsed ? "justify-center w-full" : ""}`}
               >
                 <div
-                  className={`p-2 rounded-md transition-all duration-200 ${
-                    isParentActiveState
-                      ? "bg-blue-600/10 dark:bg-blue-600/20"
-                      : "bg-gray-200 dark:bg-gray-600 group-hover:bg-blue-200/50 dark:group-hover:bg-blue-600/30"
-                  }`}
+                  className={`p-2 rounded-md transition-all duration-200 ${isParentActiveState
+                    ? "bg-blue-600/10 dark:bg-blue-600/20"
+                    : "bg-gray-200 dark:bg-gray-600 group-hover:bg-blue-200/50 dark:group-hover:bg-blue-600/30"
+                    }`}
                 >
                   <IconComponent
                     className={`
                       w-5 h-5 transition-colors duration-200
-                      ${
-                        isParentActiveState
-                          ? "text-blue-600 dark:text-blue-300"
-                          : "text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400"
+                      ${isParentActiveState
+                        ? "text-blue-600 dark:text-blue-300"
+                        : "text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400"
                       }
                     `}
                   />
@@ -196,13 +198,11 @@ export default function AppNavbar({
               </div>
               {!isCollapsed && (
                 <ChevronDown
-                  className={`w-4 h-4 transition-transform duration-300 ${
-                    isExpanded ? "rotate-180" : ""
-                  } ${
-                    isParentActiveState
+                  className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""
+                    } ${isParentActiveState
                       ? "text-blue-600 dark:text-blue-300"
                       : "text-gray-400 dark:text-gray-500"
-                  }`}
+                    }`}
                 />
               )}
             </div>
@@ -220,10 +220,9 @@ export default function AppNavbar({
                     <Link
                       className={`
                         flex items-center px-3 py-2 text-sm rounded-lg transition-all duration-200 group relative
-                        ${
-                          isChildActive
-                            ? "bg-blue-600/10 dark:bg-blue-600/20 text-blue-700 dark:text-blue-300 font-medium"
-                            : "text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50/50 dark:hover:bg-gray-700/50"
+                        ${isChildActive
+                          ? "bg-blue-600/10 dark:bg-blue-600/20 text-blue-700 dark:text-blue-300 font-medium"
+                          : "text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50/50 dark:hover:bg-gray-700/50"
                         }
                       `}
                       href={child.href}
@@ -235,10 +234,9 @@ export default function AppNavbar({
                       <ChildIconComponent
                         className={`
                           w-4 h-4 mr-2.5 transition-colors duration-200
-                          ${
-                            isChildActive
-                              ? "text-blue-600 dark:text-blue-300"
-                              : "text-gray-400 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400"
+                          ${isChildActive
+                            ? "text-blue-600 dark:text-blue-300"
+                            : "text-gray-400 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400"
                           }
                         `}
                       />
@@ -260,10 +258,9 @@ export default function AppNavbar({
           <Link
             className={`
               flex items-center ${isCollapsed ? "justify-center" : ""} px-3 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 group relative
-              ${
-                isActive
-                  ? "bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/40 dark:to-blue-900/20 text-blue-700 dark:text-blue-200 shadow-sm"
-                  : "text-gray-700 dark:text-gray-200 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100/50 dark:hover:from-gray-700/50 dark:hover:to-gray-700/20"
+              ${isActive
+                ? "bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/40 dark:to-blue-900/20 text-blue-700 dark:text-blue-200 shadow-sm"
+                : "text-gray-700 dark:text-gray-200 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100/50 dark:hover:from-gray-700/50 dark:hover:to-gray-700/20"
               }
             `}
             href={item.href}
@@ -273,19 +270,17 @@ export default function AppNavbar({
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-blue-400/5 dark:from-blue-600/10 dark:to-blue-400/10 rounded-lg " />
             )}
             <div
-              className={`p-2 rounded-md transition-all duration-200 relative z-10 ${
-                isActive
-                  ? "bg-blue-600/10 dark:bg-blue-600/20"
-                  : "bg-gray-200 dark:bg-gray-600 group-hover:bg-blue-200/50 dark:group-hover:bg-blue-600/30"
-              }`}
+              className={`p-2 rounded-md transition-all duration-200 relative z-10 ${isActive
+                ? "bg-blue-600/10 dark:bg-blue-600/20"
+                : "bg-gray-200 dark:bg-gray-600 group-hover:bg-blue-200/50 dark:group-hover:bg-blue-600/30"
+                }`}
             >
               <IconComponent
                 className={`
                   w-5 h-5 transition-colors duration-200
-                  ${
-                    isActive
-                      ? "text-blue-600 dark:text-blue-300"
-                      : "text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400"
+                  ${isActive
+                    ? "text-blue-600 dark:text-blue-300"
+                    : "text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400"
                   }
                 `}
               />
@@ -445,11 +440,10 @@ export default function AppNavbar({
         <div className="h-full px-3 overflow-y-auto bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 custom-scrollbar transition-colors duration-300 flex flex-col">
           {/* Sidebar Header */}
           <div
-            className={`flex items-center ${isCollapsed ? "justify-center" : "justify-between"} px-3 py-4 rounded-lg transition-all duration-300 ${
-              isCollapsed
-                ? ""
-                : "bg-gradient-to-r from-blue-500/5 to-blue-600/5 dark:from-blue-600/10 dark:to-blue-700/10 border border-blue-100 dark:border-blue-900/30 mb-2"
-            }`}
+            className={`flex items-center ${isCollapsed ? "justify-center" : "justify-between"} px-3 py-4 rounded-lg transition-all duration-300 ${isCollapsed
+              ? ""
+              : "bg-gradient-to-r from-blue-500/5 to-blue-600/5 dark:from-blue-600/10 dark:to-blue-700/10 border border-blue-100 dark:border-blue-900/30 mb-2"
+              }`}
           >
             <Link
               className={`flex items-center ${isCollapsed ? "justify-center" : ""}`}

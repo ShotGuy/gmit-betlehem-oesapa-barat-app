@@ -1,13 +1,14 @@
-import prisma from "@/lib/prisma";
-import { apiResponse } from "@/lib/apiHelper";
 import { createApiHandler } from "@/lib/apiHandler";
+import { apiResponse } from "@/lib/apiHelper";
+import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 async function handlePost(req, res) {
   try {
     const {
       // Majelis data
-      namaLengkap,
+      // namaLengkap, // Removed
+      idJemaat, // New Required
       mulai,
       selesai,
       idRayon,
@@ -27,14 +28,14 @@ async function handlePost(req, res) {
     } = req.body;
 
     // Validate required fields
-    if (!namaLengkap || !mulai || !jenisJabatanId || !username || !email || !password) {
+    if (!idJemaat || !mulai || !jenisJabatanId || !username || !email || !password) {
       return res
         .status(400)
         .json(
           apiResponse(
             false,
             null,
-            "Data yang wajib diisi: Nama Lengkap, Tanggal Mulai, Jenis Jabatan, Username, Email, dan Password"
+            "Data yang wajib diisi: Jemaat, Tanggal Mulai, Jenis Jabatan, Username, Email, dan Password"
           )
         );
     }
@@ -70,7 +71,16 @@ async function handlePost(req, res) {
         }
       }
 
-      // 4. Validate rayon if provided
+      // 4. Validate Jemaat
+      const jemaat = await tx.jemaat.findUnique({
+        where: { id: idJemaat }, // Majelis uses idJemaat
+      });
+
+      if (!jemaat) {
+        throw new Error("JEMAAT_NOT_FOUND");
+      }
+
+      // 5. Validate rayon if provided
       if (idRayon) {
         const rayon = await tx.rayon.findUnique({
           where: { id: idRayon },
@@ -80,7 +90,7 @@ async function handlePost(req, res) {
           throw new Error("RAYON_NOT_FOUND");
         }
 
-        // 5. Jika isUtama = true, pastikan hanya 1 majelis utama per rayon
+        // 6. Jika isUtama = true, pastikan hanya 1 majelis utama per rayon
         if (isUtama === true) {
           const existingUtama = await tx.majelis.findFirst({
             where: {
@@ -95,13 +105,18 @@ async function handlePost(req, res) {
         }
       }
 
-      // 6. Create Majelis
+      // 7. Create Majelis
       const majelisData = {
-        namaLengkap,
+        // namaLengkap, // Removed
+        jemaat: {
+          connect: {
+            id: idJemaat,
+          },
+        },
         mulai: new Date(mulai),
         selesai: selesai ? new Date(selesai) : null,
-        idRayon: idRayon || null,
-        jenisJabatanId: jenisJabatanId || null,
+        rayon: idRayon ? { connect: { id: idRayon } } : undefined,
+        jenisJabatan: jenisJabatanId ? { connect: { id: jenisJabatanId } } : undefined,
       };
 
       // Tambahkan permission fields jika ada
@@ -126,13 +141,18 @@ async function handlePost(req, res) {
               namaRayon: true,
             },
           },
+          jemaat: {
+            select: {
+              nama: true,
+            }
+          }
         },
       });
 
-      // 7. Hash password
+      // 8. Hash password
       const hashedPassword = await bcrypt.hash(password, 12);
 
-      // 8. Create User account linked to Majelis
+      // 9. Create User account linked to Majelis
       const newUser = await tx.user.create({
         data: {
           username,
@@ -187,6 +207,10 @@ async function handlePost(req, res) {
       return res
         .status(404)
         .json(apiResponse(false, null, "Jenis jabatan tidak ditemukan"));
+    }
+
+    if (error.message === "JEMAAT_NOT_FOUND") {
+      return res.status(404).json(apiResponse(false, null, "Data Jemaat tidak ditemukan"));
     }
 
     if (error.message === "RAYON_NOT_FOUND") {

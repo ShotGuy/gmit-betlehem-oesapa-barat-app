@@ -120,7 +120,7 @@ export const jenisJabatanSchema = z.object({
 // Majelis Creation Schema
 export const majelisCreationSchema = z.object({
   // Majelis data
-  namaLengkap: z.string().min(2, "Nama lengkap wajib diisi"),
+  idJemaat: z.string().nonempty("Jemaat wajib dipilih"),
   mulai: z.string().nonempty("Tanggal mulai wajib diisi"),
   selesai: z.string().optional(),
   idRayon: z.string().optional(),
@@ -141,9 +141,41 @@ export const majelisCreationSchema = z.object({
   noWhatsapp: z.string().optional(),
 });
 
+// Pegawai Creation Schema
+export const pegawaiCreationSchema = z.object({
+  // Pegawai data
+  idJemaat: z.string().nonempty("Jemaat wajib dipilih"),
+  mulai: z.string().nonempty("Tanggal mulai wajib diisi"),
+  selesai: z.string().optional(),
+  idJenisJabatan: z.string().nonempty("Jenis jabatan wajib dipilih"),
+
+  // Permission fields
+  // 1. Administrasi Jemaat
+  canViewJemaat: z.boolean().default(false),
+  canManageJemaat: z.boolean().default(false),
+
+  // 2. Operasional & Ibadah
+  canManageJadwal: z.boolean().default(false),
+  canManagePengumuman: z.boolean().default(false),
+  canManageGaleri: z.boolean().default(false),
+
+  // 3. Keuangan
+  canViewKeuangan: z.boolean().default(false),
+  canManageKeuangan: z.boolean().default(false),
+
+  isActive: z.boolean().default(true),
+
+  // User account data
+  username: z.string().min(3, "Username minimal 3 karakter"),
+  email: z.string().email("Format email tidak valid"),
+  password: z.string().min(6, "Password minimal 6 karakter"),
+  noWhatsapp: z.string().optional(),
+});
+
 // Majelis Edit Schema (without user account data)
 export const majelisEditSchema = z.object({
-  namaLengkap: z.string().min(2, "Nama lengkap wajib diisi"),
+  // namaLengkap: z.string().min(2, "Nama lengkap wajib diisi"), // Removed
+  // jemaatId: z.string().optional(), // Usually cannot change Jemaat for existing Majelis, but if needed... for now assume readonly.
   mulai: z.string().nonempty("Tanggal mulai wajib diisi"),
   selesai: z.string().optional(),
   idRayon: z.string().optional(),

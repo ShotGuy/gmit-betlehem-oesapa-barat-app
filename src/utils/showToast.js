@@ -14,6 +14,7 @@ export function showToast({
   const toastTypeMap = {
     success: toast.success,
     error: toast.error,
+    danger: toast.error, // Alias for danger -> error
     warning: toast.warning,
     info: toast.info,
   };

@@ -1,22 +1,39 @@
-import prisma from "@/lib/prisma";
-import { apiResponse } from "@/lib/apiHelper";
-import { parseQueryParams } from "@/lib/queryParams";
 import { createApiHandler } from "@/lib/apiHandler";
+import { apiResponse } from "@/lib/apiHelper";
+import prisma from "@/lib/prisma";
+import { parseQueryParams } from "@/lib/queryParams";
 
 async function handleGet(req, res) {
   try {
-    const { pagination, sort, where } = parseQueryParams(req.query, {
-      searchField: "namaLengkap",
-      defaultSortBy: "namaLengkap",
+    let { pagination, sort, where } = parseQueryParams(req.query, {
+      searchField: "namaLengkap", // Placeholder
+      defaultSortBy: "mulai",
     });
+
+    // Custom search logic for relation
+    if (req.query.search) {
+      where = {
+        ...where,
+        jemaat: {
+          nama: {
+            contains: req.query.search,
+            mode: 'insensitive'
+          }
+        }
+      };
+      // Remove the potentially wrong 'namaLengkap' filter
+      delete where.namaLengkap;
+    }
 
     const total = await prisma.majelis.count({ where });
 
     const items = await prisma.majelis.findMany({
       where,
       skip: pagination.skip,
-      take: pagination.take,
-      orderBy: {
+      take: pagination.limit,
+      orderBy: sort.sortBy === 'jemaat.nama' ? {
+        jemaat: { nama: sort.sortOrder }
+      } : {
         [sort.sortBy]: sort.sortOrder,
       },
       include: {

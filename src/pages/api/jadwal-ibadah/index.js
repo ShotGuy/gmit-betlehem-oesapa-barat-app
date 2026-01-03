@@ -1,14 +1,14 @@
-import prisma from "@/lib/prisma";
-import { apiResponse } from "@/lib/apiHelper";
-import { parseQueryParams } from "@/lib/queryParams";
 import { createApiHandler } from "@/lib/apiHandler";
+import { apiResponse } from "@/lib/apiHelper";
 import { requireAuth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
+import { parseQueryParams } from "@/lib/queryParams";
 
 async function handleGet(req, res) {
   try {
     // Check authentication
     const authResult = await requireAuth(req, res);
-    
+
     if (authResult.error) {
       return res
         .status(authResult.status)
@@ -27,7 +27,7 @@ async function handleGet(req, res) {
 
     // Build where clause based on user role and filters
     let where = { ...baseWhere };
-    
+
     // Handle rayon filter
     if (rayon) {
       where = {
@@ -81,7 +81,7 @@ async function handleGet(req, res) {
     if (month && year) {
       const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
       const endDate = new Date(parseInt(year), parseInt(month), 0); // Last day of month
-      
+
       where = {
         ...where,
         tanggal: {
@@ -140,7 +140,7 @@ async function handleGet(req, res) {
         pembuat: {
           select: {
             id: true,
-            namaLengkap: true,
+            // namaLengkap: true,
           }
         }
       },
@@ -187,9 +187,9 @@ async function handleGet(req, res) {
 
 async function handlePost(req, res) {
   try {
-    // Check authentication
-    const authResult = await requireAuth(req, res, ['ADMIN', 'MAJELIS']);
-    
+    // Check authentication (ADMIN, MAJELIS, EMPLOYEE)
+    const authResult = await requireAuth(req, res, ['ADMIN', 'MAJELIS', 'EMPLOYEE']);
+
     if (authResult.error) {
       return res
         .status(authResult.status)
@@ -197,14 +197,20 @@ async function handlePost(req, res) {
     }
 
     const { user } = authResult;
+
+    // Strict Permission Check for Employees
+    if (user.role === 'EMPLOYEE') {
+      const pegawaiCheck = await prisma.pegawai.findUnique({
+        where: { id: user.idPegawai },
+      });
+
+      if (!pegawaiCheck?.canCreateJadwal) {
+        return res.status(403).json(apiResponse(false, null, "Anda tidak memiliki izin untuk membuat jadwal ibadah."));
+      }
+    }
+
     const {
       idJenisIbadah,
-      idKategori,
-      idPemimpin,
-      idKeluarga,
-      idRayon,
-      judul,
-      tanggal,
       waktuMulai,
       waktuSelesai,
       alamat,

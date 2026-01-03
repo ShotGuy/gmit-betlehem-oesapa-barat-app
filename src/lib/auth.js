@@ -68,10 +68,12 @@ export const requireAuth = async (req, res, allowedRoles = null) => {
         noWhatsapp: true,
         idJemaat: true,
         idMajelis: true,
+        idPegawai: true, // TAMBAH INI
         jemaat: {
           select: {
             id: true,
             nama: true,
+            // ... truncated (keeping existing)
             jenisKelamin: true,
             tanggalLahir: true,
             golonganDarah: true,
@@ -131,10 +133,28 @@ export const requireAuth = async (req, res, allowedRoles = null) => {
             },
           },
         },
+        pegawai: { // TAMBAH INI
+          select: {
+            id: true,
+            // namaLengkap removed
+            canViewJemaat: true,
+            canManageJemaat: true,
+            canManageJadwal: true,
+            canManagePengumuman: true,
+            canManageGaleri: true,
+            canViewKeuangan: true,
+            canManageKeuangan: true,
+            jenisJabatan: {
+              select: {
+                namaJabatan: true,
+              }
+            }
+          }
+        },
         majelis: {
           select: {
             id: true,
-            namaLengkap: true,
+            // namaLengkap removed
             mulai: true,
             selesai: true,
             idRayon: true,

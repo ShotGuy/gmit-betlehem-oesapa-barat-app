@@ -1,13 +1,13 @@
-import prisma from "@/lib/prisma";
-import { apiResponse } from "@/lib/apiHelper";
 import { createApiHandler } from "@/lib/apiHandler";
+import { apiResponse } from "@/lib/apiHelper";
 import { requireAuth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 
 async function handleGet(req, res) {
   try {
     // Check authentication
     const authResult = await requireAuth(req, res);
-    
+
     if (authResult.error) {
       return res
         .status(authResult.status)
@@ -66,7 +66,7 @@ async function handleGet(req, res) {
         pembuat: {
           select: {
             id: true,
-            namaLengkap: true,
+            // namaLengkap: true,
           }
         }
       }
@@ -81,13 +81,13 @@ async function handleGet(req, res) {
     // Check access rights based on user role
     const hasAccess = (() => {
       if (user.role === 'ADMIN') return true;
-      
+
       if (user.role === 'MAJELIS' && user.majelis) {
         // Majelis can access jadwal in their rayon
         if (jadwalIbadah.idRayon === user.majelis.idRayon) return true;
         if (jadwalIbadah.keluarga && jadwalIbadah.keluarga.rayon.id === user.majelis.idRayon) return true;
       }
-      
+
       if (user.role === 'JEMAAT' && user.jemaat) {
         // Jemaat can access jadwal in their rayon
         if (jadwalIbadah.idRayon === user.jemaat.keluarga.idRayon) return true;
@@ -126,7 +126,7 @@ async function handlePatch(req, res) {
   try {
     // Check authentication
     const authResult = await requireAuth(req, res, ['ADMIN', 'MAJELIS']);
-    
+
     if (authResult.error) {
       return res
         .status(authResult.status)
@@ -163,7 +163,7 @@ async function handlePatch(req, res) {
     // Check access rights for editing
     const canEdit = (() => {
       if (user.role === 'ADMIN') return true;
-      
+
       if (user.role === 'MAJELIS' && user.majelis) {
         // Majelis can edit jadwal in their rayon
         if (existingJadwal.idRayon === user.majelis.idRayon) return true;
@@ -293,7 +293,7 @@ async function handlePatch(req, res) {
         pembuat: {
           select: {
             id: true,
-            namaLengkap: true,
+            // namaLengkap: true,
           }
         }
       }
@@ -322,7 +322,7 @@ async function handleDelete(req, res) {
   try {
     // Check authentication
     const authResult = await requireAuth(req, res, ['ADMIN', 'MAJELIS']);
-    
+
     if (authResult.error) {
       return res
         .status(authResult.status)
@@ -359,7 +359,7 @@ async function handleDelete(req, res) {
     // Check access rights for deleting
     const canDelete = (() => {
       if (user.role === 'ADMIN') return true;
-      
+
       if (user.role === 'MAJELIS' && user.majelis) {
         // Majelis can delete jadwal in their rayon
         if (existingJadwal.idRayon === user.majelis.idRayon) return true;

@@ -222,10 +222,12 @@ model User {
   role       Role
   idJemaat   String? @unique @db.VarChar(80) // Untuk role: JEMAAT
   idMajelis  String? @unique @db.VarChar(80) // TAMBAH INI - Untuk role: MAJELIS
+  idPegawai  String? @unique @db.VarChar(80) // TAMBAH INI - Untuk role: EMPLOYEE
   idRayon    String? @db.VarChar(80) // TAMBAH INI - Untuk memudahkan akses data berdasarkan rayon
 
   jemaat   Jemaat?  @relation(fields: [idJemaat], references: [id])
   majelis  Majelis? @relation(fields: [idMajelis], references: [id]) // TAMBAH INI
+  pegawai  Pegawai? @relation(fields: [idPegawai], references: [id]) // TAMBAH INI
   rayon    Rayon?   @relation(fields: [idRayon], references: [id]) // TAMBAH INI
   isActive Boolean  @default(true)
 
@@ -273,6 +275,7 @@ model Jemaat {
   atestasis                     Atestasi[]
   User                          User?
   Majelis                       Majelis[]
+  pegawais                      Pegawai[] // TAMBAH INI
   dokumenJemaat                 DokumenJemaat[] // Documents uploaded by jemaat
 
   // Keuangan relations
@@ -332,21 +335,22 @@ model JenisJabatan {
   namaJabatan String    @db.VarChar(50) // Contoh: Pendeta, Majelis, Karyawan, dll.
   isActive    Boolean   @default(true)
   majelises   Majelis[]
+  pegawais    Pegawai[] // TAMBAH INI
 
   @@map("jenis_jabatan")
 }
 
 model Majelis {
   id          String    @id @default(dbgenerated("concat('mjl_', gen_random_uuid())")) @db.VarChar(80)
-  namaLengkap String    @db.VarChar(50)
+  // namaLengkap removed
   mulai       DateTime  @db.Date
   selesai     DateTime? @db.Date
   idRayon     String?   @db.VarChar(80) // TAMBAH INI
 
   jenisJabatan   JenisJabatan? @relation(fields: [jenisJabatanId], references: [id])
   jenisJabatanId String?       @db.VarChar(80)
-  jemaat         Jemaat?       @relation(fields: [jemaatId], references: [id])
-  jemaatId       String?       @db.VarChar(80)
+  jemaat         Jemaat?       @relation(fields: [idJemaat], references: [id])
+  idJemaat       String?       @db.VarChar(80)
   rayon          Rayon?        @relation(fields: [idRayon], references: [id]) // TAMBAH INI
 
   // --- permission logic
@@ -361,6 +365,45 @@ model Majelis {
   User          User?
 
   @@map("majelis")
+}
+
+model Pegawai {
+  id             String    @id @default(dbgenerated("concat('pgw_', gen_random_uuid())")) @db.VarChar(80)
+  // namaLengkap removed
+  
+  mulai          DateTime  @db.Date
+  selesai        DateTime? @db.Date
+
+  // Relasi Jabatan (via JenisJabatan generic)
+  idJenisJabatan String    @db.VarChar(80)
+  jenisJabatan   JenisJabatan @relation(fields: [idJenisJabatan], references: [id])
+
+  // Relasi Jemaat (Opsional, jika pegawai adalah jemaat)
+  idJemaat       String?   @db.VarChar(80)
+  jemaat         Jemaat?   @relation(fields: [idJemaat], references: [id])
+
+  // Relasi User (Untuk login)
+  User           User?
+
+  // Permissions (Hak Akses)
+  // 1. Administrasi Jemaat
+  canViewJemaat      Boolean @default(false)
+  canManageJemaat    Boolean @default(false)
+
+  // 2. Operasional & Ibadah
+  canManageJadwal    Boolean @default(false)
+  canManagePengumuman Boolean @default(false)
+  canManageGaleri    Boolean @default(false)
+
+  // 3. Keuangan
+  canViewKeuangan    Boolean @default(false)
+  canManageKeuangan  Boolean @default(false)
+  
+  isActive       Boolean @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("pegawai")
 }
 
 model Pernikahan {

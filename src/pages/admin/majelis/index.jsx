@@ -1,27 +1,26 @@
-import { useState } from "react";
-import { useRouter } from "next/router";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Eye,
-  Trash,
-  Plus,
-  Crown,
-  MapPin,
   Calendar,
-  User,
+  Crown,
+  Eye,
+  MapPin,
   Pen,
-  UserPlus,
+  Trash,
+  User,
+  UserPlus
 } from "lucide-react";
+import { useRouter } from "next/router";
+import { useState } from "react";
 
-import majelisService from "@/services/majelisService";
-import masterService from "@/services/masterService";
-import { majelisEditSchema } from "@/validations/masterSchema";
-import ListGrid from "@/components/ui/ListGrid";
 import CreateOrEditModal from "@/components/common/CreateOrEditModal";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import ListGrid from "@/components/ui/ListGrid";
 import useConfirm from "@/hooks/useConfirm";
 import useModalForm from "@/hooks/useModalForm";
 import { useUser } from "@/hooks/useUser";
+import majelisService from "@/services/majelisService";
+import masterService from "@/services/masterService";
+import { majelisEditSchema } from "@/validations/masterSchema";
 
 export default function MajelisPage() {
   const router = useRouter();
@@ -59,13 +58,13 @@ export default function MajelisPage() {
       ),
     },
     {
-      key: "namaLengkap",
-      label: "Nama Lengkap",
+      key: "jemaat.nama",
+      label: "Nama Majelis",
       type: "text",
       render: (value, item) => (
         <span className="flex items-center text-sm font-medium">
           <Crown className="w-4 h-4 mr-2 text-purple-500" />
-          {value}
+          {item.jemaat?.nama || "-"}
         </span>
       ),
     },
@@ -133,9 +132,8 @@ export default function MajelisPage() {
   const handleDelete = (item) => {
     confirm.showConfirm({
       title: "Hapus Majelis",
-      message: `Apakah Anda yakin ingin menghapus majelis "${item.namaLengkap}"? ${
-        item.User ? "Akun pengguna terkait juga akan dihapus. " : ""
-      }Data yang sudah dihapus tidak dapat dikembalikan.`,
+      message: `Apakah Anda yakin ingin menghapus majelis "${item.jemaat?.nama || item.id}"? ${item.User ? "Akun pengguna terkait juga akan dihapus. " : ""
+        }Data yang sudah dihapus tidak dapat dikembalikan.`,
       confirmText: "Ya, Hapus",
       cancelText: "Batal",
       variant: "danger",
@@ -180,13 +178,13 @@ export default function MajelisPage() {
         ]}
         columns={columns}
         customAddButton={{
-              ...(authData?.isAdmin
+          ...(authData?.isAdmin
             ? {
-                onClick: handleCreate,
-                variant: "primary",
-                icon: <UserPlus className="w-4 h-4 mr-2" />,
-                text: "Tambah Majelis + Akun",
-              }
+              onClick: handleCreate,
+              variant: "primary",
+              icon: <UserPlus className="w-4 h-4 mr-2" />,
+              text: "Tambah Majelis + Akun",
+            }
             : {}),
         }}
         data={data?.data?.items || []}
@@ -198,29 +196,29 @@ export default function MajelisPage() {
         rowActions={[
           ...(authData?.isAdmin
             ? [
-                {
-                  icon: Pen,
-                  onClick: (item) => modal.open(item),
-                  variant: "outline",
-                  tooltip: "Edit majelis",
-                },
-              ]
+              {
+                icon: Pen,
+                onClick: (item) => modal.open(item),
+                variant: "outline",
+                tooltip: "Edit majelis",
+              },
+            ]
             : []),
           {
             icon: Eye,
-          onClick: handleView,
+            onClick: handleView,
             variant: "outline",
             tooltip: "Lihat detail lengkap",
           },
           ...(authData?.isAdmin
             ? [
-                {
-                  icon: Trash,
-                  onClick: handleDelete,
-                  variant: "outline",
-                  tooltip: "Hapus majelis",
-                },
-              ]
+              {
+                icon: Trash,
+                onClick: handleDelete,
+                variant: "outline",
+                tooltip: "Hapus majelis",
+              },
+            ]
             : []),
         ]}
         searchPlaceholder="Cari nama majelis..."
@@ -230,7 +228,6 @@ export default function MajelisPage() {
 
       <CreateOrEditModal
         defaultValues={{
-          namaLengkap: "",
           mulai: "",
           selesai: "",
           idRayon: "",
@@ -238,13 +235,6 @@ export default function MajelisPage() {
         }}
         editData={modal.editData}
         fields={[
-          {
-            type: "text",
-            name: "namaLengkap",
-            label: "Nama Lengkap",
-            placeholder: "Masukkan nama lengkap majelis",
-            required: true,
-          },
           {
             type: "date",
             name: "mulai",
@@ -321,10 +311,10 @@ export default function MajelisPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-500 dark:text-gray-100">
-                        Nama Lengkap
+                        Nama Majelis
                       </label>
                       <p className="text-sm text-gray-900 dark:text-gray-100">
-                        {viewData.namaLengkap}
+                        {viewData.jemaat?.nama || "-"}
                       </p>
                     </div>
                     <div>

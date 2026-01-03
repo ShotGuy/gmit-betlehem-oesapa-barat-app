@@ -1,593 +1,386 @@
+
 import {
-  Baby,
-  BarChart3,
-  Bell,
-  Building,
-  Building2,
-  Calendar,
-  Church,
-  ClipboardList,
-  Crown,
-  Database,
-  DollarSign,
-  FileText,
-  Globe,
-  GraduationCap,
-  Heart,
-  Home,
-  Image,
-  List,
-  Map,
-  MapPin,
-  Monitor,
-  MoreHorizontal,
-  Shield,
-  Tag,
-  UserCheck,
-  UserCog,
-  UserPlus,
-  Users,
-  UsersRound,
+    Activity,
+    Baby,
+    BadgeDollarSign,
+    BarChart3,
+    BookOpen,
+    Briefcase,
+    Building2,
+    Calendar,
+    Church,
+    CreditCard,
+    Database,
+    FileText,
+    GraduationCap,
+    Heart,
+    Home,
+    Image,
+    Info,
+    Layers,
+    LayoutDashboard,
+    Map,
+    Megaphone,
+    Monitor,
+    PieChart,
+    Scroll,
+    Settings,
+    User,
+    UserCog,
+    Users,
+    Wallet
 } from "lucide-react";
 
-// ======================
-// Base Admin Navigation
-// ======================
-const adminNavigation = [
-  { href: "/admin/dashboard", label: "Dashboard", icon: Home },
-  { href: "/admin/users", label: "Kelola Akun", icon: Users },
-  { href: "/admin/jemaat", label: "Jemaat", icon: Users },
-  { href: "/admin/dokumen-jemaat", label: "Dokumen Jemaat", icon: FileText },
-  { href: "/admin/keluarga", label: "Keluarga", icon: UsersRound },
-  { href: "/admin/majelis", label: "Majelis", icon: UserCheck },
-  {
-    href: "/admin/manajemen-rayon-majelis",
-    label: "Manajemen Rayon Majelis",
-    icon: MapPin,
-  },
-  { href: "/admin/rayon", label: "Rayon", icon: MapPin },
-  { href: "/admin/pengumuman", label: "Pengumuman", icon: Bell },
-  { href: "/admin/sidi", label: "Sidi", icon: GraduationCap },
-  { href: "/admin/baptis", label: "Baptis", icon: Baby },
-  { href: "/admin/pernikahan", label: "Pernikahan", icon: Heart },
-  { href: "/admin/galeri", label: "Galeri", icon: Image },
-  {
-    href: "/admin/konten-landing-page",
-    label: "Konten Landing Page",
-    icon: Globe,
-  },
-  {
-    href: "/admin/data-master",
-    label: "Data Master",
-    icon: Database,
-    children: [
-      {
-        href: "/admin/data-master/wilayah-administratif",
-        label: "Wilayah Administratif",
-        icon: Map,
-      },
-      {
-        href: "/admin/data-master/status-keluarga",
-        label: "Status Keluarga",
-        icon: MapPin,
-      },
-      {
-        href: "/admin/data-master/jenis-ibadah",
-        label: "Jenis Ibadah",
-        icon: MapPin,
-      },
-      { href: "/admin/data-master/klasis", label: "Klasis", icon: Church },
-      {
-        href: "/admin/data-master/keadaan-rumah",
-        label: "Keadaan Rumah",
-        icon: Building,
-      },
-      {
-        href: "/admin/data-master/status-kepemilikan-rumah",
-        label: "Status Kepemilikan Rumah",
-        icon: Tag,
-      },
-      {
-        href: "/admin/data-master/status-dalam-keluarga",
-        label: "Status Dalam Keluarga",
-        icon: UserCog,
-      },
-      { href: "/admin/data-master/suku", label: "Suku", icon: Tag },
-      {
-        href: "/admin/data-master/kategori-jadwal",
-        label: "Kategori Jadwal",
-        icon: Tag,
-      },
-      {
-        href: "/admin/data-master/jenis-jabatan",
-        label: "Jenis Jabatan",
-        icon: Crown,
-      },
-      { href: "/admin/data-master/pekerjaan", label: "Pekerjaan", icon: Tag },
-      { href: "/admin/data-master/pendidikan", label: "Pendidikan", icon: Tag },
-      { href: "/admin/data-master/pendapatan", label: "Pendapatan", icon: Tag },
-      {
-        href: "/admin/data-master/profil-pendeta",
-        label: "Profil Pendeta",
-        icon: Tag,
-      },
-      {
-        href: "/admin/data-master/jaminan-kesehatan",
-        label: "Jaminan Kesehatan",
-        icon: Tag,
-      },
-      {
-        href: "/admin/data-master/kategori-pengumuman",
-        label: "Kategori Pengumuman",
-        icon: Tag,
-      },
-      {
-        href: "/admin/data-master/jenis-pengumuman",
-        label: "Jenis Pengumuman",
-        icon: Tag,
-      },
-    ],
-  },
-  { href: "/admin/keuangan", label: "Statistik Keuangan", icon: DollarSign },
-  {
-    href: "/admin/keuangan/realisasi",
-    label: "Realisasi Keuangan ",
-    icon: List,
-  },
-  {
-    href: "/admin/data-master-keuangan",
-    label: "Data Master Keuangan",
-    icon: DollarSign,
-    children: [
-      {
-        href: "/admin/data-master/keuangan/kategori",
-        label: "Kategori Keuangan",
-        icon: Tag,
-      },
-      {
-        href: "/admin/data-master/keuangan/item",
-        label: "Rancangan Item Keuangan",
-        icon: List,
-      },
-      {
-        href: "/admin/data-master/keuangan/periode",
-        label: "Periode Anggaran",
-        icon: Calendar,
-      },
-    ],
-  },
-  { href: "/admin/laporan", label: "Laporan", icon: FileText },
-  { href: "/admin/analytics", label: "Analitik", icon: BarChart3 },
-  { href: "/admin/system-info", label: "Informasi Sistem", icon: Monitor },
-];
+export const getRoleConfig = (role, user = null) => {
+    // Helper to check granular permissions
+    const hasPermission = (permission) => {
+        if (!user || user.role !== "EMPLOYEE" || !user.pegawai) return true; // Non-employees or incomplete data -> allow (or handle differently)
+        // For admin, usually allow all? Or strictly check? Admin usually defined by role.
+        // For Employee, check specific flag
+        return user.pegawai[permission] === true;
+    };
 
-// ======================
-// Mapping Label Pendeta
-// ======================
-// kalau kamu ingin ubah label khusus pendeta, tinggal mapping di sini
-const pendetaLabelMap = {
-  "Kelola Akun": "Data Akun Jemaat",
-  Jemaat: "Data Jemaat",
-  "Dokumen Jemaat": "Dokumen Pelayanan",
-  Keluarga: "Data Keluarga",
-  Majelis: "Majelis Gereja",
-  "Manajemen Rayon Majelis": "Rayon Pelayanan",
-  Rayon: "Rayon Jemaat",
-  Pengumuman: "Informasi Pelayanan",
-  Sidi: "Data Sidi",
-  Baptis: "Data Baptis",
-  Pernikahan: "Data Pernikahan",
-  Galeri: "Galeri Kegiatan",
-  "Data Master": "Referensi Data",
-  "Statistik Keuangan": "Laporan Keuangan",
-  "Realisasi Keuangan ": "Realisasi Anggaran",
-  "Data Master Keuangan": "Data Keuangan",
-  Laporan: "Laporan Pelayanan",
-  Analitik: "Analitik Data",
-  "Informasi Sistem": "Info Sistem",
-};
+    // Recursive function to filter navigation items
+    const filterNavigation = (items) => {
+        return items.reduce((acc, item) => {
+            // 1. Check if this item requires a specific permission
+            if (item.requiredPermission && !hasPermission(item.requiredPermission)) {
+                return acc; // Skip this item
+            }
 
-// Helper untuk ubah label pendeta tanpa ubah href
-const mapPendetaNavigation = (items) =>
-  items.map((item) => ({
-    ...item,
-    label: pendetaLabelMap[item.label] || item.label,
-    children: item.children ? mapPendetaNavigation(item.children) : undefined,
-  }));
+            // 2. Process children if match
+            if (item.children) {
+                const filteredChildren = filterNavigation(item.children);
+                // If the item has children but all are filtered out, should we hide the parent? 
+                // Usually yes, unless it's a direct link too.
+                // For now, keep parent if it has no requiredPermission itself, or if it had children originally and some survive.
+                if (filteredChildren.length > 0 || (item.children.length === 0)) { // Keep if original children were 0 (unlikely for group) or if surviving children exist
+                    acc.push({ ...item, children: filteredChildren });
+                }
+            } else {
+                acc.push(item);
+            }
+            return acc;
+        }, []);
+    };
 
-// Role-based configurations
-export const roleConfigs = {
-  pendeta: {
-    roleTitle: "Pendeta",
-    fullTitle: "JBOB | Pendeta",
-    description:
-      "Sistem pelayanan gereja untuk mendukung tugas pendeta dalam pelayanan jemaat dan kegiatan gereja.",
-    baseRoute: "/pendeta",
-    dashboardRoute: "/pendeta/dashboard",
-    logoIcon: Shield,
-    userInfo: {
-      name: "Pendeta GMIT",
-      email: "pendeta@gmit-jbob.org",
-      organization: "Betlehem Oesapa Barat",
-    },
+    let config = {};
 
-    navigation: mapPendetaNavigation(adminNavigation), // pakai admin tapi label diubah
-    footerLinks: [
-      { href: "/admin/dashboard", label: "Dashboard" },
-      { href: "/admin/members", label: "Manajemen Jemaat" },
-      { href: "/admin/events", label: "Manajemen Acara" },
-      { href: "/admin/finance", label: "Keuangan" },
-    ],
-  },
-  admin: {
-    roleTitle: "Admin",
-    fullTitle: "JBOB | Admin",
-    description:
-      "Sistem administrasi gereja untuk mengelola data jemaat, kegiatan, dan keuangan dengan mudah dan efisien.",
-    baseRoute: "/admin",
-    dashboardRoute: "/admin/dashboard",
-    logoIcon: Shield,
-    userInfo: {
-      name: "Admin GMIT",
-      email: "admin@gmit-jbob.org",
-      organization: "Betlehem Oesapa Barat",
-    },
-    navigation: [
-      { href: "/admin/dashboard", label: "Dashboard", icon: Home },
-      { href: "/admin/users", label: "Kelola Akun", icon: Users },
-      { href: "/admin/jemaat", label: "Jemaat", icon: Users },
-      {
-        href: "/admin/dokumen-jemaat",
-        label: "Dokumen Jemaat",
-        icon: FileText,
-      },
-      { href: "/admin/keluarga", label: "Keluarga", icon: UsersRound },
-      { href: "/admin/majelis", label: "Majelis", icon: UserCheck },
-      {
-        href: "/admin/manajemen-rayon-majelis",
-        label: "Manajemen Rayon Majelis",
-        icon: MapPin,
-      },
-      // { href: "/admin/kegiatan", label: "Kegiatan", icon: Calendar },
-      { href: "/admin/rayon", label: "Rayon", icon: MapPin },
-      {
-        href: "/admin/pengumuman",
-        label: "Pengumuman",
-        icon: Bell,
-      },
-      {
-        href: "/admin/sidi",
-        label: "Sidi",
-        icon: GraduationCap,
-      },
-      {
-        href: "/admin/baptis",
-        label: "Baptis",
-        icon: Baby,
-      },
-      {
-        href: "/admin/pernikahan",
-        label: "Pernikahan",
-        icon: Heart,
-      },
+    switch (role) {
+        case "admin":
+            config = {
+                baseRoute: "/admin",
+                dashboardRoute: "/admin/dashboard",
+                fullTitle: "Admin Panel",
+                logoIcon: Church,
+                userInfo: {
+                    name: "Administrator",
+                    organization: "GMIT Betlehem Oesapa Barat",
+                },
+                navigation: [
+                    {
+                        label: "Dashboard",
+                        href: "/admin/dashboard",
+                        icon: LayoutDashboard,
+                    },
 
-      {
-        href: "/admin/galeri",
-        label: "Galeri",
-        icon: Image,
-      },
-      {
-        href: "/admin/konten-landing-page",
-        label: "Konten Landing Page",
-        icon: Globe,
-      },
+                    // --- BASIS DATA JEMAAT ---
+                    {
+                        label: "Basis Data Jemaat", // Group Header
+                        href: "group-basis-data-jemaat",
+                        icon: Users, // Visual grouping icon
+                        children: [
+                            { label: "Data Jemaat", href: "/admin/jemaat", icon: Users },
+                            { label: "Data Keluarga", href: "/admin/keluarga", icon: Home },
+                            { label: "Dokumen Jemaat", href: "/admin/dokumen-jemaat", icon: FileText },
+                            { label: "Manajemen User", href: "/admin/users", icon: UserCog },
+                        ]
+                    },
 
-      {
-        href: "/admin/data-master",
-        label: "Data Master",
-        icon: Database,
-        children: [
-          {
-            href: "/admin/data-master/wilayah-administratif",
-            label: "Wilayah Administratif",
-            icon: Map,
-          },
-          {
-            href: "/admin/data-master/status-keluarga",
-            label: "Status Keluarga",
-            icon: MapPin,
-          },
+                    // --- ORGANISASI & SDM ---
+                    {
+                        label: "Organisasi & SDM",
+                        href: "group-organisasi-sdm",
+                        icon: Building2,
+                        children: [
+                            { label: "Majelis", href: "/admin/majelis", icon: UserCog },
+                            { label: "Pegawai", href: "/admin/pegawai", icon: Briefcase },
+                            { label: "Data Rayon", href: "/admin/rayon", icon: Map },
+                            { label: "Manajemen Rayon", href: "/admin/manajemen-rayon-majelis", icon: Settings },
+                        ]
+                    },
 
-          {
-            href: "/admin/data-master/jenis-ibadah",
-            label: "Jenis Ibadah",
-            icon: MapPin,
-          },
-          {
-            href: "/admin/data-master/klasis",
-            label: "Klasis",
-            icon: Church,
-          },
+                    // --- PELAYANAN & IBADAH ---
+                    {
+                        label: "Pelayanan & Ibadah",
+                        href: "group-pelayanan-ibadah",
+                        icon: Heart,
+                        children: [
+                            { label: "Pengumuman", href: "/admin/pengumuman", icon: Megaphone },
+                            // Sakramen Group
+                            { label: "Baptis", href: "/admin/baptis", icon: Baby },
+                            { label: "Sidi", href: "/admin/sidi", icon: Scroll },
+                            { label: "Pernikahan", href: "/admin/pernikahan", icon: Heart },
+                            // Konten
+                            { label: "Galeri", href: "/admin/galeri", icon: Image },
+                            { label: "Konten Landing Page", href: "/admin/konten-landing-page", icon: Monitor },
+                        ]
+                    },
 
-          {
-            href: "/admin/data-master/keadaan-rumah",
-            label: "Keadaan Rumah",
-            icon: Building,
-          },
-          {
-            href: "/admin/data-master/status-kepemilikan-rumah",
-            label: "Status Kepemilikan Rumah",
-            icon: Tag,
-          },
-          {
-            href: "/admin/data-master/status-dalam-keluarga",
-            label: "Status Dalam Keluarga",
-            icon: UserCog,
-          },
-          {
-            href: "/admin/data-master/suku",
-            label: "Suku",
-            icon: Tag,
-          },
-          {
-            href: "/admin/data-master/kategori-jadwal",
-            label: "Kategori Jadwal",
-            icon: Tag,
-          },
-          {
-            href: "/admin/data-master/jenis-jabatan",
-            label: "Jenis Jabatan",
-            icon: Crown,
-          },
-          {
-            href: "/admin/data-master/pekerjaan",
-            label: "Pekerjaan",
-            icon: Tag,
-          },
-          {
-            href: "/admin/data-master/pendidikan",
-            label: "Pendidikan",
-            icon: Tag,
-          },
-          {
-            href: "/admin/data-master/pendapatan",
-            label: "Pendapatan",
-            icon: Tag,
-          },
-          {
-            href: "/admin/data-master/profil-pendeta",
-            label: "Profil Pendeta",
-            icon: Tag,
-          },
-          {
-            href: "/admin/data-master/jaminan-kesehatan",
-            label: "Jaminan Kesehatan",
-            icon: Tag,
-          },
-          {
-            href: "/admin/data-master/kategori-pengumuman",
-            label: "Kategori Pengumuman",
-            icon: Tag,
-          },
-          {
-            href: "/admin/data-master/jenis-pengumuman",
-            label: "Jenis Pengumuman",
-            icon: Tag,
-          },
-        ],
-      },
-      {
-        href: "/admin/keuangan",
-        label: "Statistik Keuangan",
-        icon: DollarSign,
-      },
-      {
-        href: "/admin/keuangan/realisasi",
-        label: "Realisasi Keuangan ",
-        icon: List,
-      },
-      {
-        href: "/admin/data-master-keuangan",
-        label: "Data Master Keuangan",
-        icon: DollarSign,
-        children: [
-          {
-            href: "/admin/data-master/keuangan/kategori",
-            label: "Kategori Keuangan",
-            icon: Tag,
-          },
-          {
-            href: "/admin/data-master/keuangan/item",
-            label: "Rancangan Item Keuangan",
-            icon: List,
-          },
-          {
-            href: "/admin/data-master/keuangan/periode",
-            label: "Periode Anggaran",
-            icon: Calendar,
-          },
-        ],
-      },
-      { href: "/admin/laporan", label: "Laporan", icon: FileText },
+                    // --- KEUANGAN ---
+                    {
+                        label: "Keuangan",
+                        href: "group-keuangan",
+                        icon: Wallet,
+                        children: [
+                            // { label: "Dashboard Keuangan", href: "/admin/keuangan", icon: layouts }, // Optional if exists
+                            { label: "Realisasi Keuangan", href: "/admin/keuangan/realisasi", icon: CreditCard },
+                            { label: "Laporan", href: "/admin/laporan", icon: FileText },
+                            // Master Keuangan
+                            { label: "Kategori Keuangan", href: "/admin/keuangan/kategori", icon: Layers }, // Verify path if needed, assuming standard
+                            { label: "Rancangan Item", href: "/admin/keuangan/item", icon: BadgeDollarSign },
+                            { label: "Periode Anggaran", href: "/admin/keuangan/anggaran", icon: Calendar },
+                        ]
+                    },
 
-      { href: "/admin/analytics", label: "Analitik", icon: BarChart3 },
-      { href: "/admin/system-info", label: "Informasi Sistem", icon: Monitor },
-      {
-        href: "/admin/traffic-monitor",
-        label: "Monitor Traffic Web",
-        icon: Monitor,
-      },
-      // { href: "/admin/settings", label: "Pengaturan", icon: Settings },
-    ],
-    footerLinks: [
-      { href: "/admin/dashboard", label: "Dashboard" },
-      { href: "/admin/members", label: "Manajemen Jemaat" },
-      { href: "/admin/events", label: "Manajemen Acara" },
-      { href: "/admin/finance", label: "Keuangan" },
-    ],
-  },
+                    // --- DATA MASTER (FULL) ---
+                    {
+                        label: "Data Master",
+                        href: "group-data-master",
+                        icon: Database,
+                        children: [
+                            // Wilayah
+                            { label: "Wilayah Administratif", href: "/admin/data-master/wilayah-administratif", icon: Map },
 
-  jemaat: {
-    roleTitle: "Jemaat",
-    fullTitle: "Portal Jemaat",
-    description:
-      "Portal untuk jemaat GMIT Betlehem Oesapa Barat untuk mengakses informasi kegiatan, persembahan, dan layanan gereja.",
-    baseRoute: "/jemaat",
-    dashboardRoute: "/jemaat/dashboard",
-    logoIcon: Heart,
-    userInfo: {
-      name: "Jemaat GMIT",
-      email: "jemaat@gmit-jbob.org",
-      organization: "Betlehem Oesapa Barat",
-    },
-    navigation: [
-      { href: "/jemaat/dashboard", label: "Beranda", icon: Home },
-      { href: "/jemaat/profile", label: "Profil Saya", icon: UserCheck },
-      { href: "/jemaat/jadwal-ibadah", label: "Jadwal Ibadah", icon: Calendar },
-      { href: "/jemaat/keluarga", label: "Keluarga", icon: DollarSign },
-      // { href: "/jemaat/attendance", label: "Kehadiran", icon: CheckSquare },
-      // { href: "/jemaat/prayer", label: "Doa", icon: Heart },
-      // { href: "/jemaat/news", label: "Berita", icon: Bell },
-    ],
-    footerLinks: [
-      { href: "/jemaat/dashboard", label: "Beranda" },
-      { href: "/jemaat/events", label: "Kegiatan" },
-      { href: "/jemaat/offering", label: "Persembahan" },
-      { href: "/jemaat/prayer", label: "Doa" },
-    ],
-  },
+                            // Gerejawi
+                            { label: "Klasis", href: "/admin/data-master/klasis", icon: Church },
+                            { label: "Jenis Ibadah", href: "/admin/data-master/jenis-ibadah", icon: BookOpen },
+                            { label: "Kategori Jadwal", href: "/admin/data-master/kategori-jadwal", icon: Calendar },
+                            { label: "Profil Pendeta", href: "/admin/data-master/profil-pendeta", icon: UserCog },
 
-  majelis: {
-    roleTitle: "Majelis",
-    fullTitle: "JBOB | Majelis",
-    description:
-      "Sistem manajemen untuk majelis gereja dalam mengawasi dan mengelola kegiatan pelayanan.",
-    baseRoute: "/majelis",
-    dashboardRoute: "/majelis/dashboard",
-    logoIcon: Building2,
-    userInfo: {
-      name: "Majelis GMIT",
-      email: "majelis@gmit-jbob.org",
-      organization: "Betlehem Oesapa Barat",
-    },
-    navigation: [
-      { href: "/majelis/dashboard", label: "Dashboard", icon: Home },
-      {
-        href: "/majelis/akun-jemaat",
-        label: "Kelola Akun Jemaat",
-        icon: UserCog,
-      },
-      {
-        href: "/majelis/jemaat",
-        label: "Data Jemaat",
-        icon: Users,
-      },
-      {
-        href: "/majelis/keluarga",
-        label: "Data Keluarga",
-        icon: UsersRound,
-      },
-      {
-        href: "/majelis/dokumen-jemaat",
-        label: "Dokumen Jemaat",
-        icon: FileText,
-      },
-      {
-        href: "/majelis/jadwal-ibadah",
-        label: "Jadwal Ibadah",
-        icon: Calendar,
-      },
-      {
-        href: "/majelis/pengumuman",
-        label: "Pengumuman",
-        icon: Bell,
-      },
+                            // Kependudukan
+                            { label: "Pekerjaan", href: "/admin/data-master/pekerjaan", icon: Briefcase },
+                            { label: "Pendidikan", href: "/admin/data-master/pendidikan", icon: GraduationCap },
+                            { label: "Suku", href: "/admin/data-master/suku", icon: Users },
+                            { label: "Pendapatan", href: "/admin/data-master/pendapatan", icon: BadgeDollarSign },
+                            { label: "Jaminan Kesehatan", href: "/admin/data-master/jaminan-kesehatan", icon: Activity },
 
-      // { href: "/majelis/meetings", label: "Rapat", icon: Users },
-      // { href: "/majelis/decisions", label: "Keputusan", icon: ClipboardList },
-      // { href: "/majelis/programs", label: "Program", icon: BookOpen },
-      // { href: "/majelis/reports", label: "Laporan", icon: FileText },
-    ],
-    footerLinks: [
-      { href: "/majelis/dashboard", label: "Dashboard" },
-      { href: "/majelis/oversight", label: "Pengawasan" },
-      { href: "/majelis/meetings", label: "Rapat" },
-      { href: "/majelis/reports", label: "Laporan" },
-    ],
-  },
+                            // Keluarga & Rumah
+                            { label: "Status Keluarga", href: "/admin/data-master/status-keluarga", icon: Home },
+                            { label: "Status Dlm Keluarga", href: "/admin/data-master/status-dalam-keluarga", icon: Users },
+                            { label: "Keadaan Rumah", href: "/admin/data-master/keadaan-rumah", icon: Home },
+                            { label: "Sts Kepemilikan Rumah", href: "/admin/data-master/status-kepemilikan-rumah", icon: Home },
 
-  employee: {
-    roleTitle: "Pegawai",
-    fullTitle: "JBOB | Pegawai",
-    description:
-      "Sistem untuk pegawai gereja dalam mengelola tugas harian dan koordinasi pelayanan.",
-    baseRoute: "/employee",
-    dashboardRoute: "/employee/dashboard",
-    logoIcon: UserPlus,
-    userInfo: {
-      name: "Pegawai GMIT",
-      email: "employee@gmit-jbob.org",
-      organization: "Betlehem Oesapa Barat",
-    },
-    navigation: [
-      { href: "/employee/dashboard", label: "Dashboard", icon: Home },
-      {
-        href: "/employee/kegiatan-gereja",
-        label: "Kegiatan Gereja",
-        icon: Calendar,
-      },
-      { href: "/employee/pengumuman", label: "Pengumuman", icon: Heart },
-      {
-        href: "/employee/lainnya",
-        label: "Lainnya",
-        icon: MoreHorizontal,
-        children: [
-          {
-            href: "/employee/lainnya/baptis",
-            label: "Baptis",
-            icon: Users,
-          },
-          {
-            href: "/employee/lainnya/sidi",
-            label: "Sidi",
-            icon: ClipboardList,
-          },
-          {
-            href: "/employee/lainnya/pernikahan",
-            label: "Pernikahan",
-            icon: Heart,
-          },
-          {
-            href: "/employee/lainnya/atestasi",
-            label: "Atestasi",
-            icon: FileText,
-          },
-        ],
-      },
-      {
-        href: "/employee/galeri",
-        label: "Galeri",
-        icon: Image,
-      },
-    ],
-    footerLinks: [
-      { href: "/employee/dashboard", label: "Dashboard" },
-      { href: "/employee/tasks", label: "Tugas" },
-      { href: "/employee/schedule", label: "Jadwal" },
-      { href: "/employee/services", label: "Pelayanan" },
-    ],
-  },
-};
+                            // Lainnya
+                            { label: "Jenis Jabatan", href: "/admin/data-master/jenis-jabatan", icon: UserCog },
+                            { label: "Kategori Pengumuman", href: "/admin/data-master/kategori-pengumuman", icon: Megaphone },
+                            { label: "Jenis Pengumuman", href: "/admin/data-master/jenis-pengumuman", icon: Megaphone },
+                        ],
+                    },
 
-// Common church contact information
-export const churchContact = {
-  address: "Jl. Gereja No. 123, Kupang, NTT",
-  phone: "+62 380-123456",
-  email: "info@gmit-jbob.org",
-  website: "www.gmit-jbob.org",
-};
+                    // --- SISTEM ---
+                    {
+                        label: "Sistem",
+                        href: "group-sistem",
+                        icon: Settings,
+                        children: [
+                            { label: "Analitik", href: "/admin/analytics", icon: PieChart },
+                            { label: "Monitor Traffic", href: "/admin/traffic-monitor", icon: BarChart3 },
+                            { label: "Info Sistem", href: "/admin/system-info", icon: Info },
+                        ]
+                    }
+                ],
+            };
+            break;
+        case "majelis":
+            config = {
+                baseRoute: "/majelis",
+                dashboardRoute: "/majelis/dashboard",
+                fullTitle: "Majelis Dashboard",
+                logoIcon: Church,
+                userInfo: {
+                    name: "Majelis",
+                    organization: "GMIT JBOB",
+                },
+                navigation: [
+                    {
+                        label: "Dashboard",
+                        href: "/majelis/dashboard",
+                        icon: LayoutDashboard,
+                    },
+                    {
+                        label: "Pelayanan",
+                        href: "group-majelis-pelayanan",
+                        icon: Heart,
+                        children: [
+                            { label: "Data Jemaat", href: "/majelis/jemaat", icon: Users },
+                            { label: "Data Keluarga", href: "/majelis/keluarga", icon: Home },
+                            { label: "Dokumen Jemaat", href: "/majelis/dokumen-jemaat", icon: FileText },
+                        ]
+                    },
+                    {
+                        label: "Kegiatan",
+                        href: "group-majelis-kegiatan",
+                        icon: Calendar,
+                        children: [
+                            { label: "Jadwal Ibadah", href: "/majelis/jadwal-ibadah", icon: Calendar },
+                            { label: "Pengumuman", href: "/majelis/pengumuman", icon: Megaphone },
+                        ]
+                    },
+                    {
+                        label: "Akun Jemaat",
+                        href: "/majelis/akun-jemaat",
+                        icon: UserCog
+                    }
+                ],
+            };
+            break;
+        case "employee":
+            config = {
+                baseRoute: "/employee",
+                dashboardRoute: "/employee/dashboard",
+                fullTitle: "Staff Area",
+                logoIcon: Church,
+                userInfo: {
+                    name: "Staff",
+                    organization: "GMIT JBOB",
+                },
+                navigation: [
+                    {
+                        label: "Dashboard",
+                        href: "/employee/dashboard",
+                        icon: LayoutDashboard,
+                    },
+                    {
+                        label: "Operasional",
+                        href: "group-staff-operasional",
+                        icon: Briefcase,
+                        children: [
+                            {
+                                label: "Data Jemaat",
+                                href: "/employee/jemaat",
+                                icon: Users,
+                                requiredPermission: "canViewJemaat"
+                            },
+                            {
+                                label: "Jadwal Ibadah",
+                                href: "/employee/jadwal-ibadah",
+                                icon: Calendar,
+                                requiredPermission: "canManageJadwal"
+                            },
+                            {
+                                label: "Pengumuman",
+                                href: "/employee/pengumuman",
+                                icon: Megaphone,
+                                requiredPermission: "canManagePengumuman"
+                            },
+                            {
+                                label: "Galeri",
+                                href: "/employee/galeri",
+                                icon: Image,
+                                requiredPermission: "canManageGaleri"
+                            },
+                        ]
+                    },
+                    {
+                        label: "Keuangan",
+                        href: "group-staff-keuangan",
+                        icon: Wallet,
+                        children: [
+                            {
+                                label: "Statistik Keuangan",
+                                href: "/employee/keuangan",
+                                icon: LayoutDashboard,
+                                requiredPermission: "canManageKeuangan"
+                            },
+                            {
+                                label: "Realisasi Keuangan",
+                                href: "/employee/keuangan/transaksi",
+                                icon: CreditCard,
+                                requiredPermission: "canManageKeuangan"
+                            },
+                        ]
+                    },
+                    {
+                        label: "Data Master (Keuangan)",
+                        href: "group-staff-master-keuangan",
+                        icon: Database,
+                        children: [
+                            {
+                                label: "Item Anggaran",
+                                href: "/employee/keuangan/master/item",
+                                icon: BadgeDollarSign,
+                                requiredPermission: "canManageKeuangan"
+                            },
+                            {
+                                label: "Kategori Keuangan",
+                                href: "/employee/keuangan/master/kategori",
+                                icon: Layers,
+                                requiredPermission: "canManageKeuangan"
+                            },
+                            {
+                                label: "Periode Anggaran",
+                                href: "/employee/keuangan/master/periode",
+                                icon: Calendar,
+                                requiredPermission: "canManageKeuangan"
+                            },
+                        ]
+                    }
+                ],
+            };
+            break;
+        case "jemaat":
+            config = {
+                baseRoute: "/jemaat",
+                dashboardRoute: "/jemaat/dashboard",
+                fullTitle: "Portal Jemaat",
+                logoIcon: Church,
+                userInfo: {
+                    name: "Jemaat",
+                    organization: "GMIT JBOB",
+                },
+                navigation: [
+                    {
+                        label: "Dashboard",
+                        href: "/jemaat/dashboard",
+                        icon: LayoutDashboard,
+                    },
+                    {
+                        label: "Ibadah & Kegiatan",
+                        href: "/jemaat/jadwal-ibadah",
+                        icon: Calendar,
+                    },
+                    {
+                        label: "Data Saya",
+                        href: "group-jemaat-data",
+                        icon: User,
+                        children: [
+                            { label: "Keluarga", href: "/jemaat/keluarga", icon: Home },
+                            { label: "Profil Pribadi", href: "/jemaat/profile", icon: User },
+                        ]
+                    }
+                ],
+            };
+            break;
+        default:
+            config = {
+                baseRoute: "/",
+                dashboardRoute: "/",
+                fullTitle: "GMIT JBOB",
+                logoIcon: Church,
+                userInfo: {
+                    name: "Guest",
+                    organization: "GMIT JBOB",
+                },
+                navigation: [],
+            };
+            break;
+    }
 
-// Helper function to get role config
-export const getRoleConfig = (role) => {
-  return roleConfigs[role] || roleConfigs.admin;
+    // Apply filtering before returning
+    if (user && role === "employee") {
+        config.navigation = filterNavigation(config.navigation);
+    }
+
+    return config;
 };

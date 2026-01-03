@@ -27,6 +27,7 @@ export default function MasterDataPage({
   filterFields = [],
   defaultSort = null,
   disableSorting = false,
+  canManage = false,
 }) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -44,9 +45,9 @@ export default function MasterDataPage({
       // Pass sorting parameters if defaultSort is provided
       const params = defaultSort
         ? {
-            sortBy: defaultSort.sortBy,
-            sortOrder: defaultSort.sortOrder,
-          }
+          sortBy: defaultSort.sortBy,
+          sortOrder: defaultSort.sortOrder,
+        }
         : {};
 
       return service.get(params);
@@ -135,31 +136,31 @@ export default function MasterDataPage({
             variant: "outline",
             tooltip: "Lihat detail",
           },
-          ...(authData?.isAdmin
+          ...(authData?.isAdmin || canManage
             ? [
-                {
-                  icon: Edit,
-                  onClick: (item) => setEditItem(item),
-                  variant: "outline",
-                  tooltip: "Edit detail",
-                },
-              ]
+              {
+                icon: Edit,
+                onClick: (item) => setEditItem(item),
+                variant: "outline",
+                tooltip: "Edit detail",
+              },
+            ]
             : []),
-          ...(authData?.isAdmin
+          ...(authData?.isAdmin || canManage
             ? [
-                {
-                  icon: Trash2,
-                  onClick: (item) => setDeleteItem(item),
-                  variant: "outline",
-                  tooltip: "Hapus data",
-                },
-              ]
+              {
+                icon: Trash2,
+                onClick: (item) => setDeleteItem(item),
+                variant: "outline",
+                tooltip: "Hapus data",
+              },
+            ]
             : []),
         ]}
         searchPlaceholder={`Cari ${title.toLowerCase()}...`}
         searchable={searchFields.length > 0}
         title={title}
-        onAdd={authData?.isAdmin ? () => setShowCreate(true) : undefined}
+        onAdd={(authData?.isAdmin || canManage) ? () => setShowCreate(true) : undefined}
       />
 
       <ConfirmDialog
@@ -176,11 +177,11 @@ export default function MasterDataPage({
         data={
           viewItem && Array.isArray(viewFields)
             ? viewFields.map((field) => ({
-                label: field.label,
-                value: field.getValue
-                  ? field.getValue(viewItem)
-                  : viewItem?.[field.key],
-              }))
+              label: field.label,
+              value: field.getValue
+                ? field.getValue(viewItem)
+                : viewItem?.[field.key],
+            }))
             : []
         }
         isOpen={!!viewItem}

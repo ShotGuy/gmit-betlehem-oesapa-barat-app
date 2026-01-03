@@ -41,7 +41,7 @@ async function handleGet(req, res) {
           where: { id: user.idMajelis },
           select: {
             id: true,
-            namaLengkap: true,
+            // namaLengkap: true, // Removed as per schema update
             mulai: true,
             selesai: true,
             idRayon: true,

@@ -1,17 +1,19 @@
-import prisma from "@/lib/prisma";
-import { apiResponse } from "@/lib/apiHelper";
-import { parseQueryParams } from "@/lib/queryParams";
 import { createApiHandler } from "@/lib/apiHandler";
+import { apiResponse } from "@/lib/apiHelper";
 import { staffOnly } from "@/lib/apiMiddleware";
 import { requireAuth } from "@/lib/auth";
 import { processDateFields } from "@/lib/dateUtils";
+import prisma from "@/lib/prisma";
+import { parseQueryParams } from "@/lib/queryParams";
 
 async function handleGet(req, res) {
   try {
     // Get authenticated user for role-based filtering
     const authResult = await requireAuth(req, res);
+    console.log("Jemaat API hit: auth result", authResult ? "ok" : "null");
 
     if (authResult.error) {
+      console.log("Auth error in Jemaat API", authResult.error);
       return res
         .status(authResult.status)
         .json(apiResponse(false, null, authResult.error));
@@ -25,23 +27,31 @@ async function handleGet(req, res) {
     });
 
     // Apply rayon-based filtering for MAJELIS users
-    if (user.role === 'MAJELIS' && user.majelis && user.majelis.idRayon) {
+    if (user.role === "MAJELIS" && user.majelis && user.majelis.idRayon) {
       where.keluarga = {
         ...where.keluarga,
-        idRayon: user.majelis.idRayon
+        idRayon: user.majelis.idRayon,
       };
     }
 
     const total = await prisma.jemaat.count({ where });
 
-    const items = await prisma.jemaat.findMany({
-      where,
-      skip: pagination.skip,
-      take: pagination.limit,
-      orderBy: {
-        [sort.sortBy]: sort.sortOrder,
-      },
-      include: {
+    // Check for "simple" mode (for dropdown search)
+    const isSimpleMode = req.query.mode === "simple";
+
+    const include = isSimpleMode
+      ? {
+        keluarga: {
+          select: {
+            rayon: {
+              select: {
+                namaRayon: true,
+              },
+            },
+          },
+        },
+      }
+      : {
         keluarga: {
           include: {
             alamat: {
@@ -52,18 +62,18 @@ async function handleGet(req, res) {
                       include: {
                         kotaKab: {
                           include: {
-                            provinsi: true
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
+                            provinsi: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             },
             statusKeluarga: true,
-            rayon: true
-          }
+            rayon: true,
+          },
         },
         statusDalamKeluarga: true,
         suku: true,
@@ -71,9 +81,20 @@ async function handleGet(req, res) {
         pekerjaan: true,
         pendapatan: true,
         jaminanKesehatan: true,
-        User: true
-      }
+        User: true,
+      };
+
+    console.log("Jemaat API: finding items with mode", isSimpleMode ? "simple" : "full", "where:", JSON.stringify(where), "include:", JSON.stringify(include));
+    const items = await prisma.jemaat.findMany({
+      where,
+      skip: pagination.skip,
+      take: pagination.limit,
+      orderBy: {
+        [sort.sortBy]: sort.sortOrder,
+      },
+      include,
     });
+    console.log("Jemaat API: found items", items.length);
 
     const totalPages = Math.ceil(total / pagination.limit);
 
@@ -93,6 +114,10 @@ async function handleGet(req, res) {
       .json(apiResponse(true, result, "Data berhasil diambil"));
   } catch (error) {
     console.error("Error fetching jemaat:", error);
+    // Write error to file for debugging
+    const fs = require('fs');
+    fs.writeFileSync('debug_api_jemaat_error.txt', JSON.stringify({ message: error.message, stack: error.stack }, null, 2));
+
     return res
       .status(500)
       .json(

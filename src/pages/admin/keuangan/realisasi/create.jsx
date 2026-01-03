@@ -2,367 +2,323 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { ArrowLeft, Calculator, Save } from "lucide-react";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import AdminLayout from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import AutoCompleteInput from "@/components/ui/inputs/AutoCompleteInput";
+import DatePicker from "@/components/ui/inputs/DatePicker";
+import TextAreaInput from "@/components/ui/inputs/TextAreaInput";
+import TextInput from "@/components/ui/inputs/TextInput";
 import LoadingScreen from "@/components/ui/LoadingScreen";
 import PageHeader from "@/components/ui/PageHeader";
 
-export default function CreateRealisasiPage() {
+export default function AdminCreateRealisasiPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [formData, setFormData] = useState({
-    itemKeuanganId: "",
-    periodeId: "",
-    tanggalRealisasi: "",
-    totalRealisasi: "",
-    keterangan: "",
-  });
 
-  // Query untuk get item keuangan (level 4 only)
-  const { data: itemList, isLoading: itemLoading } = useQuery({
-    queryKey: ["item-level-4"],
-    queryFn: async () => {
-      const response = await axios.get("/api/keuangan/item", {
-        params: { level: 4, limit: 200 },
-      });
-
-      return response.data.data.items;
+  const form = useForm({
+    defaultValues: {
+      periodeId: "",
+      kategoriId: "",
+      itemKeuanganId: "",
+      tanggalRealisasi: new Date().toISOString().split("T")[0],
+      totalRealisasi: "",
+      keterangan: "",
     },
   });
 
-  // Get selected item details
-  const selectedItem = itemList?.find(
-    (item) => item.id === formData.itemKeuanganId
-  );
+  const {
+    watch,
+    setValue,
+    formState: { isSubmitting },
+    handleSubmit,
+  } = form;
 
-  // Query untuk get periode list
-  const { data: periodeList } = useQuery({
-    queryKey: ["periode-list"],
+  const watchedPeriodeId = watch("periodeId");
+  const watchedKategoriId = watch("kategoriId");
+  const watchedItemKeuanganId = watch("itemKeuanganId");
+  const watchedTotalRealisasi = watch("totalRealisasi");
+
+  // Options State
+  const [periodeOptions, setPeriodeOptions] = useState([]);
+  const [kategoriOptions, setKategoriOptions] = useState([]);
+  const [itemOptions, setItemOptions] = useState([]);
+
+  // Fetch Periode (Active Only)
+  const { data: periodeOptionsRaw, isLoading: isLoadingPeriode } = useQuery({
+    queryKey: ["periode-list-active"],
     queryFn: async () => {
-      const response = await axios.get("/api/keuangan/periode", {
-        params: { limit: 50, isActive: true },
+      const response = await axios.get("/api/keuangan/periode/options", {
+        params: { active: true },
       });
-      return response.data.data.items;
+      return response.data.data;
     },
   });
 
-  // Mutation untuk create realisasi
+  useEffect(() => {
+    if (periodeOptionsRaw && periodeOptionsRaw.length > 0) {
+      setPeriodeOptions(periodeOptionsRaw);
+      // Auto select first active period if available and none selected
+      if (!form.getValues("periodeId")) {
+        setValue("periodeId", periodeOptionsRaw[0].value);
+      }
+    }
+  }, [periodeOptionsRaw, setValue, form]);
+
+  // Fetch Kategori
+  const { data: kategoriOptionsRaw } = useQuery({
+    queryKey: ["kategori-list"],
+    queryFn: async () => {
+      const response = await axios.get("/api/keuangan/kategori/options");
+      return response.data.data;
+    },
+  });
+
+  useEffect(() => {
+    if (kategoriOptionsRaw) {
+      setKategoriOptions(kategoriOptionsRaw);
+    }
+  }, [kategoriOptionsRaw]);
+
+  // Fetch Items based on Periode & Kategori
+  const { data: rawItemData, isLoading: isLoadingItems } = useQuery({
+    queryKey: ["item-keuangan-options", watchedPeriodeId, watchedKategoriId],
+    queryFn: async () => {
+      const params = {};
+      if (watchedPeriodeId) params.periodeId = watchedPeriodeId;
+      if (watchedKategoriId) params.kategoriId = watchedKategoriId;
+
+      const response = await axios.get("/api/keuangan/item", { params });
+      return response.data.data.items;
+    },
+    enabled: !!watchedPeriodeId, // Only fetch if periode is selected
+  });
+
+  useEffect(() => {
+    if (rawItemData) {
+      // Filter only leaf nodes (items that don't have children)
+      const leafItems = rawItemData.filter(item => item._count?.children === 0);
+
+      setItemOptions(
+        leafItems.map((item) => ({
+          value: item.id,
+          label: `${item.kode} - ${item.nama}`,
+        }))
+      );
+    }
+  }, [rawItemData]);
+
+  // Find selected item details for the Info Card
+  const selectedItemDetails = rawItemData?.find(item => item.id === watchedItemKeuanganId);
+
+  // Create Mutation
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      const response = await axios.post("/api/keuangan/realisasi", data);
+      // Convert string amount to number and remove UI-only fields
+      const { kategoriId, ...rest } = data; // Exclude kategoriId from payload
+      const payload = {
+        ...rest,
+        totalRealisasi: parseFloat(data.totalRealisasi.replace(/[^0-9.-]+/g, "")),
+      };
 
+      const response = await axios.post("/api/keuangan/realisasi", payload);
       return response.data;
     },
     onSuccess: () => {
-      // Refetch all realisasi-related queries
+      toast.success("Realisasi berhasil disimpan");
+      // Invalidate all relevant queries
       queryClient.invalidateQueries(["realisasi-summary"]);
       queryClient.invalidateQueries(["realisasi-list"]);
       queryClient.invalidateQueries(["realisasi-item-summary"]);
       queryClient.invalidateQueries(["realisasi-item-list"]);
-      toast.success("Realisasi berhasil dibuat");
       router.push("/admin/keuangan/realisasi");
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || "Gagal membuat realisasi");
+      toast.error(error.response?.data?.message || "Gagal menyimpan realisasi");
     },
   });
 
-  // Handle input change
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    // Auto set periode when item is selected
-    if (name === "itemKeuanganId" && value) {
-      const item = itemList?.find(item => item.id === value);
-      if (item) {
-        setFormData(prev => ({
-          ...prev,
-          [name]: value,
-          periodeId: item.periodeId, // Auto set periode from selected item
-        }));
-      }
-    }
+  const onSubmit = (data) => {
+    createMutation.mutate(data);
   };
 
-  // Handle submit
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // Validation
-    if (
-      !formData.itemKeuanganId ||
-      !formData.periodeId ||
-      !formData.tanggalRealisasi ||
-      !formData.totalRealisasi
-    ) {
-      toast.error("Mohon lengkapi semua field yang wajib diisi");
-      return;
-    }
-
-    createMutation.mutate(formData);
-  };
-
-  // Format rupiah for display
   const formatRupiah = (amount) => {
-    if (!amount || amount === 0) return "Rp 0";
-
-    return `Rp ${parseFloat(amount).toLocaleString("id-ID")}`;
+    if (!amount) return "Rp 0";
+    const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+    return `Rp ${num.toLocaleString("id-ID")}`;
   };
 
-  if (itemLoading) {
-    return <LoadingScreen isLoading={true} message="Memuat form realisasi..." />;
+  if (isLoadingPeriode) {
+    return <LoadingScreen isLoading={true} message="Memuat data..." />;
   }
 
   return (
     <div className="space-y-6 p-4">
       <PageHeader
-        breadcrumbs={[
+        actions={[
+          {
+            label: "Kembali",
+            icon: ArrowLeft,
+            variant: "outline",
+            onClick: () => router.push("/admin/keuangan/realisasi"),
+          },
+        ]}
+        breadcrumb={[
           { label: "Keuangan", href: "/admin/keuangan" },
           { label: "Realisasi", href: "/admin/keuangan/realisasi" },
           { label: "Tambah" },
         ]}
-        description="Tambah data realisasi untuk item keuangan"
+        description="Catat realisasi pemasukan atau pengeluaran baru"
         title="Tambah Realisasi Keuangan"
       />
 
-      <div className="grid grid-cols-2 lg:grid-cols-1 gap-6">
-        {/* Form */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Form */}
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
               <CardTitle>Data Realisasi</CardTitle>
             </CardHeader>
-            <CardContent>
-              <form className="space-y-6" onSubmit={handleSubmit}>
-                {/* Item Keuangan */}
-                <div>
+            <CardContent className="p-6">
+              <FormProvider {...form}>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Periode Selection */}
+                    <AutoCompleteInput
+                      label="Periode Anggaran"
+                      name="periodeId"
+                      options={periodeOptions}
+                      placeholder="Pilih periode"
+                      required
+                    />
+
+                    {/* Kategori Selection (Optional Filter) */}
+                    <AutoCompleteInput
+                      label="Filter Kategori (Opsional)"
+                      name="kategoriId"
+                      options={kategoriOptions}
+                      placeholder="Semua Kategori"
+                    />
+                  </div>
+
+                  {/* Item Selection */}
                   <AutoCompleteInput
-                    label="Item Keuangan"
-                    placeholder="Cari dan pilih item keuangan..."
+                    disabled={!watchedPeriodeId || isLoadingItems}
+                    label="Item Keuangan (Pos Anggaran)"
+                    name="itemKeuanganId"
+                    options={itemOptions}
+                    placeholder={
+                      !watchedPeriodeId
+                        ? "Pilih periode terlebih dahulu"
+                        : isLoadingItems
+                          ? "Memuat item..."
+                          : "Cari item keuangan (Kode atau Nama)"
+                    }
                     required
-                    value={formData.itemKeuanganId}
-                    options={Array.isArray(itemList) ? itemList.map(item => ({
-                      value: item.id,
-                      label: `${item.kode} - ${item.nama} (${item.kategori.nama})`
-                    })) : []}
-                    onChange={(value) => {
-                      handleInputChange({ target: { name: 'itemKeuanganId', value } });
-                    }}
                   />
-                </div>
 
-                {/* Periode */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Periode <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    required
-                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                    name="periodeId"
-                    value={formData.periodeId}
-                    onChange={handleInputChange}
-                    disabled={formData.itemKeuanganId} // Auto-set from item selection
-                  >
-                    <option value="">Pilih Periode</option>
-                    {Array.isArray(periodeList) &&
-                      periodeList.map((periode) => (
-                        <option key={periode.id} value={periode.id}>
-                          {periode.nama} ({periode.tahun})
-                        </option>
-                      ))}
-                  </select>
-                  {formData.itemKeuanganId && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      Periode otomatis dipilih berdasarkan item keuangan
-                    </p>
-                  )}
-                </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Tanggal */}
+                    <DatePicker
+                      label="Tanggal Transaksi"
+                      name="tanggalRealisasi"
+                      placeholder="Pilih tanggal"
+                      required
+                    />
 
-                {/* Tanggal Realisasi */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Tanggal Realisasi <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    required
-                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                    name="tanggalRealisasi"
-                    type="date"
-                    value={formData.tanggalRealisasi}
-                    onChange={handleInputChange}
-                  />
-                </div>
+                    {/* Jumlah Realisasi */}
+                    <TextInput
+                      label="Jumlah (Rp)"
+                      name="totalRealisasi"
+                      placeholder="Contoh: 1500000"
+                      required
+                      type="number"
+                      min="0"
+                    />
+                  </div>
 
-                {/* Total Realisasi */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Total Realisasi <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    required
-                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-                    min="0"
-                    name="totalRealisasi"
-                    placeholder="Contoh: 5500000"
-                    step="0.01"
-                    type="number"
-                    value={formData.totalRealisasi}
-                    onChange={handleInputChange}
-                  />
-                  {formData.totalRealisasi && (
-                    <div className="mt-1 text-sm text-blue-600 dark:text-blue-400">
-                      Format: {formatRupiah(formData.totalRealisasi)}
-                    </div>
-                  )}
-                </div>
-
-                {/* Keterangan */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Keterangan
-                  </label>
-                  <textarea
-                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                  {/* Keterangan */}
+                  <TextAreaInput
+                    label="Keterangan / Uraian"
                     name="keterangan"
-                    placeholder="Catatan tambahan..."
-                    rows="3"
-                    value={formData.keterangan}
-                    onChange={handleInputChange}
+                    placeholder="Masukkan keterangan detail transaksi..."
+                    rows={4}
                   />
-                </div>
 
-                {/* Action Buttons */}
-                <div className="flex gap-4 pt-6">
-                  <Button
-                    className="flex items-center gap-2"
-                    type="button"
-                    variant="outline"
-                    onClick={() => router.push("/admin/keuangan/realisasi")}
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Kembali
-                  </Button>
-
-                  <Button
-                    className="flex items-center gap-2"
-                    disabled={createMutation.isPending}
-                    type="submit"
-                  >
-                    <Save className="h-4 w-4" />
-                    {createMutation.isPending ? "Menyimpan..." : "Simpan"}
-                  </Button>
-                </div>
-              </form>
+                  {/* Actions */}
+                  <div className="flex justify-end pt-4 border-t border-gray-100 dark:border-gray-800">
+                    <Button
+                      disabled={createMutation.isPending || isSubmitting}
+                      type="submit"
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      {createMutation.isPending ? "Menyimpan..." : "Simpan Transaksi"}
+                    </Button>
+                  </div>
+                </form>
+              </FormProvider>
             </CardContent>
           </Card>
         </div>
 
-        {/* Side Info */}
+        {/* Side Info Panel */}
         <div className="space-y-6">
-          {/* Selected Item Info */}
-          {selectedItem && (
+          {/* Selected Item Detail */}
+          {selectedItemDetails && (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <Calculator className="h-5 w-5" />
-                  Target Item
+                  Info Target
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-3 text-sm">
                 <div>
-                  <span className="text-sm text-gray-600">Kode:</span>
-                  <p className="font-mono font-medium">{selectedItem.kode}</p>
+                  <span className="text-gray-500 block">Kode & Nama:</span>
+                  <p className="font-medium">{selectedItemDetails.kode} - {selectedItemDetails.nama}</p>
                 </div>
-                <div>
-                  <span className="text-sm text-gray-600">Nama:</span>
-                  <p className="font-medium">{selectedItem.nama}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <span className="text-gray-500 block">Frekuensi:</span>
+                    <p>{selectedItemDetails.targetFrekuensi || 0} {selectedItemDetails.satuanFrekuensi}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500 block">Nominal/Satuan:</span>
+                    <p>{formatRupiah(selectedItemDetails.nominalSatuan)}</p>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-sm text-gray-600">Kategori:</span>
-                  <p>{selectedItem.kategori.nama}</p>
-                </div>
-                <div>
-                  <span className="text-sm text-gray-600">
-                    Target Frekuensi:
-                  </span>
-                  <p>
-                    {selectedItem.targetFrekuensi || 0}x{" "}
-                    {selectedItem.satuanFrekuensi}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-sm text-gray-600">Nominal Target:</span>
-                  <p>{formatRupiah(selectedItem.nominalSatuan)}</p>
-                </div>
-                <div>
-                  <span className="text-sm text-gray-600">Total Target:</span>
+                <div className="pt-2 border-t border-dashed">
+                  <span className="text-gray-500 block">Total Target:</span>
                   <p className="text-lg font-bold text-blue-600">
-                    {formatRupiah(selectedItem.totalTarget)}
+                    {formatRupiah(selectedItemDetails.totalTarget)}
                   </p>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Calculation Preview */}
-          {formData.totalRealisasi && (
+          {/* Preview Calculation */}
+          {watchedTotalRealisasi && (
             <Card>
               <CardHeader>
-                <CardTitle>Preview Realisasi</CardTitle>
+                <CardTitle className="text-base">Preview</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">
-                    Tanggal:
-                  </span>
-                  <span>
-                    {formData.tanggalRealisasi ?
-                      new Date(formData.tanggalRealisasi).toLocaleDateString('id-ID')
-                      : '-'}
-                  </span>
-                </div>
-                <hr />
                 <div className="flex justify-between font-bold">
-                  <span>Total Realisasi:</span>
+                  <span>Total:</span>
                   <span className="text-green-600">
-                    {formatRupiah(formData.totalRealisasi)}
+                    {formatRupiah(watchedTotalRealisasi)}
                   </span>
                 </div>
-
-                {selectedItem && (
-                  <>
-                    <hr />
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">vs Target Item:</span>
-                      <span
-                        className={
-                          parseFloat(formData.totalRealisasi) >=
-                          parseFloat(selectedItem.totalTarget || 0)
-                            ? "text-green-600"
-                            : "text-red-600"
-                        }
-                      >
-                        {parseFloat(formData.totalRealisasi) >=
-                        parseFloat(selectedItem.totalTarget || 0)
-                          ? "✓ Melebihi target per satuan"
-                          : "✗ Belum mencapai target per satuan"}
-                      </span>
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      Total target item: {formatRupiah(selectedItem.totalTarget)}
-                    </div>
-                  </>
+                {selectedItemDetails && (
+                  <div className="text-xs text-gray-500 pt-2">
+                    Status: {parseFloat(watchedTotalRealisasi) >= parseFloat(selectedItemDetails.totalTarget || 0)
+                      ? "Melebihi/Mencapai Target"
+                      : "Di bawah Target"}
+                  </div>
                 )}
               </CardContent>
             </Card>

@@ -1,7 +1,7 @@
+import { getRoleConfig } from "@/config/navigationItem";
 import { Command, Search, X } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { getRoleConfig } from "@/config/navigationItem";
 
 const animationStyles = `
   @keyframes slideDownFade {
@@ -81,14 +81,21 @@ const animationStyles = `
   }
 `;
 
+import { useUser } from "@/hooks/useUser";
+
+// ... (existing helper function code)
+
 export default function CommandPalette({ isOpen, onClose, userRole }) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [filteredItems, setFilteredItems] = useState([]);
 
-  // Get navigation items based on user role
-  const config = getRoleConfig(userRole?.toLowerCase() || "admin");
+  // Use hook to get full user object with permissions
+  const { user } = useUser();
+
+  // Get navigation items based on user role AND user permissions
+  const config = getRoleConfig(userRole?.toLowerCase() || "admin", user);
 
   // Flatten and transform navigation items for search
   const getAllNavigationItems = () => {
@@ -96,6 +103,9 @@ export default function CommandPalette({ isOpen, onClose, userRole }) {
     const { navigation } = config;
 
     const processItems = (itemList, parentLabel = null, depth = 0) => {
+      // Safety check: itemList might be undefined/filtered out completely
+      if (!itemList) return;
+
       itemList.forEach((item) => {
         const hasChildren = item.children && item.children.length > 0;
 
@@ -265,19 +275,17 @@ export default function CommandPalette({ isOpen, onClose, userRole }) {
                     return (
                       <li
                         key={item.id}
-                        className={`transition-colors duration-150 animate-kbar-item ${
-                          isSelected
+                        className={`transition-colors duration-150 animate-kbar-item ${isSelected
                             ? "bg-blue-50 dark:bg-blue-900/30"
                             : "hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                        } ${item.isParent ? "bg-gray-50/50 dark:bg-gray-700/30" : ""}`}
+                          } ${item.isParent ? "bg-gray-50/50 dark:bg-gray-700/30" : ""}`}
                         style={{ animationDelay: `${animationDelay}ms` }}
                       >
                         <button
-                          className={`w-full text-left flex items-center gap-3 focus:outline-none transition-all ${
-                            item.isParent
+                          className={`w-full text-left flex items-center gap-3 focus:outline-none transition-all ${item.isParent
                               ? "px-4 py-3 cursor-default opacity-75"
                               : "px-4 py-3 cursor-pointer"
-                          }`}
+                            }`}
                           onClick={() => handleSelectItem(item)}
                           onMouseEnter={() => setSelectedIndex(index)}
                           disabled={item.isParent}
@@ -285,24 +293,22 @@ export default function CommandPalette({ isOpen, onClose, userRole }) {
                           {/* Indentation and hierarchy indicator */}
                           {item.depth > 0 && (
                             <div
-                              className={`flex-shrink-0 w-0.5 h-5 rounded-full ${
-                                isSelected
+                              className={`flex-shrink-0 w-0.5 h-5 rounded-full ${isSelected
                                   ? "bg-blue-400 dark:bg-blue-300"
                                   : "bg-gray-300 dark:bg-gray-600"
-                              }`}
+                                }`}
                               style={{ marginLeft: `${item.depth * 8}px` }}
                             />
                           )}
 
                           {/* Icon */}
                           <div
-                            className={`flex-shrink-0 p-2 rounded-lg transition-all ${
-                              item.isParent
+                            className={`flex-shrink-0 p-2 rounded-lg transition-all ${item.isParent
                                 ? "bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400"
                                 : isSelected
                                   ? "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300"
                                   : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
-                            }`}
+                              }`}
                           >
                             <IconComponent className="w-4 h-4" />
                           </div>
@@ -310,23 +316,21 @@ export default function CommandPalette({ isOpen, onClose, userRole }) {
                           {/* Content */}
                           <div className="flex-1 min-w-0">
                             <div
-                              className={`text-sm font-medium truncate ${
-                                item.isParent
+                              className={`text-sm font-medium truncate ${item.isParent
                                   ? "text-gray-600 dark:text-gray-300 font-semibold"
                                   : isSelected
                                     ? "text-blue-700 dark:text-blue-200"
                                     : "text-gray-900 dark:text-white"
-                              }`}
+                                }`}
                             >
                               {item.label}
                             </div>
                             {item.parentLabel && !item.isParent && (
                               <div
-                                className={`text-xs truncate ${
-                                  isSelected
+                                className={`text-xs truncate ${isSelected
                                     ? "text-blue-600 dark:text-blue-300"
                                     : "text-gray-500 dark:text-gray-400"
-                                }`}
+                                  }`}
                               >
                                 {item.parentLabel}
                               </div>
@@ -337,20 +341,18 @@ export default function CommandPalette({ isOpen, onClose, userRole }) {
                           {item.isParent && (
                             <div className="flex items-center gap-1.5 flex-shrink-0">
                               <span
-                                className={`text-xs px-2 py-1 rounded-md font-medium ${
-                                  isSelected
+                                className={`text-xs px-2 py-1 rounded-md font-medium ${isSelected
                                     ? "bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200"
                                     : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
-                                }`}
+                                  }`}
                               >
                                 {item.childrenCount} item
                               </span>
                               <svg
-                                className={`w-3 h-3 transition-transform ${
-                                  isSelected
+                                className={`w-3 h-3 transition-transform ${isSelected
                                     ? "text-gray-600 dark:text-gray-300"
                                     : "text-gray-400 dark:text-gray-500"
-                                }`}
+                                  }`}
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"

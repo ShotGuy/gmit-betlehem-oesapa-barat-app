@@ -1,6 +1,6 @@
-import prisma from "@/lib/prisma";
-import { apiResponse } from "@/lib/apiHelper";
 import { createApiHandler } from "@/lib/apiHandler";
+import { apiResponse } from "@/lib/apiHelper";
+import prisma from "@/lib/prisma";
 
 async function handleGet(req, res) {
   try {
@@ -62,7 +62,6 @@ async function handlePatch(req, res) {
   try {
     const { id } = req.query;
     const {
-      namaLengkap,
       mulai,
       selesai,
       idRayon,
@@ -75,14 +74,14 @@ async function handlePatch(req, res) {
       canManageRayon,
     } = req.body;
 
-    if (!namaLengkap || !mulai || !jenisJabatanId) {
+    if (!mulai || !jenisJabatanId) {
       return res
         .status(400)
         .json(
           apiResponse(
             false,
             null,
-            "Nama lengkap, tanggal mulai, dan jenis jabatan wajib diisi"
+            "Tanggal mulai dan jenis jabatan wajib diisi"
           )
         );
     }
@@ -111,7 +110,6 @@ async function handlePatch(req, res) {
     }
 
     const updateData = {
-      namaLengkap,
       mulai: new Date(mulai),
       selesai: selesai ? new Date(selesai) : null,
       idRayon: idRayon || null,
@@ -179,7 +177,7 @@ async function handleDelete(req, res) {
         where: { id: id },
         select: {
           id: true,
-          namaLengkap: true,
+          // namaLengkap: true, // Removed
         },
       });
 
@@ -193,9 +191,9 @@ async function handleDelete(req, res) {
       .status(200)
       .json(
         apiResponse(
-          true, 
-          result, 
-          result.userDeleted 
+          true,
+          result,
+          result.userDeleted
             ? "Majelis dan akun pengguna berhasil dihapus"
             : "Majelis berhasil dihapus"
         )
