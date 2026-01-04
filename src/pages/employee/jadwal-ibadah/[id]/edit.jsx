@@ -2,16 +2,13 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import "leaflet/dist/leaflet.css";
 import { Calendar, Clock } from "lucide-react";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 
 import { Card } from "@/components/ui/Card";
 import PageHeader from "@/components/ui/PageHeader";
 import PageTitle from "@/components/ui/PageTitle";
-import Stepper, {
-    StepContent,
-    StepperNavigation,
-} from "@/components/ui/Stepper";
+import Stepper, { StepContent, StepperNavigation } from "@/components/ui/Stepper";
 import AutoCompleteInput from "@/components/ui/inputs/AutoCompleteInput";
 import DatePicker from "@/components/ui/inputs/DatePicker";
 import LocationMapPicker from "@/components/ui/inputs/LocationMapPicker";
@@ -26,11 +23,12 @@ const steps = [
     { id: 1, title: "Informasi Dasar", description: "Jenis ibadah, kategori, dan judul" },
     { id: 2, title: "Jadwal & Lokasi", description: "Tanggal, waktu, dan tempat ibadah" },
     { id: 3, title: "Konten & Detail", description: "Tema, firman, dan keterangan" },
-    { id: 4, title: "Target & Rencana", description: "Target peserta dan informasi tambahan" },
+    { id: 4, title: "Target & Peserta", description: "Target peserta dan data kehadiran aktual" },
 ];
 
-export default function CreateJadwalIbadahEmployee() {
+export default function EditJadwalIbadahEmployee() {
     const router = useRouter();
+    const { id } = router.query;
     const [currentStep, setCurrentStep] = useState(1);
 
     const form = useForm({
@@ -54,7 +52,15 @@ export default function CreateJadwalIbadahEmployee() {
             tema: "",
             keterangan: "",
             targetPeserta: "",
+            jumlahLaki: "",
+            jumlahPerempuan: "",
         },
+    });
+
+    const { data: jadwalData, isLoading: isLoadingJadwal } = useQuery({
+        queryKey: ["jadwal-ibadah", id],
+        queryFn: () => jadwalIbadahService.getById(id),
+        enabled: !!id,
     });
 
     const { data: optionsData, isLoading: isOptionsLoading } = useQuery({
@@ -62,11 +68,47 @@ export default function CreateJadwalIbadahEmployee() {
         queryFn: () => jadwalIbadahService.getOptions(),
     });
 
-    const createMutation = useMutation({
-        mutationFn: jadwalIbadahService.create,
+    useEffect(() => {
+        if (jadwalData?.data) {
+            const jadwal = jadwalData.data;
+            const formattedDate = jadwal.tanggal ? new Date(jadwal.tanggal).toISOString().split("T")[0] : "";
+
+            const formatTimeForInput = (timeString) => {
+                if (!timeString) return "";
+                try { return new Date(timeString).toTimeString().slice(0, 5); }
+                catch { try { return timeString.slice(0, 5); } catch { return ""; } }
+            };
+
+            form.reset({
+                idJenisIbadah: jadwal.idJenisIbadah || "",
+                idKategori: jadwal.idKategori || "",
+                idPemimpin: jadwal.idPemimpin || "",
+                idKeluarga: jadwal.idKeluarga || "",
+                idRayon: jadwal.idRayon || "",
+                judul: jadwal.judul || "",
+                tanggal: formattedDate,
+                waktuMulai: formatTimeForInput(jadwal.waktuMulai),
+                waktuSelesai: formatTimeForInput(jadwal.waktuSelesai),
+                alamat: jadwal.alamat || "",
+                lokasi: jadwal.lokasi || "",
+                latitude: jadwal.latitude?.toString() || "",
+                longitude: jadwal.longitude?.toString() || "",
+                googleMapsLink: jadwal.googleMapsLink || "",
+                firman: jadwal.firman || "",
+                tema: jadwal.tema || "",
+                keterangan: jadwal.keterangan || "",
+                targetPeserta: jadwal.targetPeserta?.toString() || "",
+                jumlahLaki: jadwal.jumlahLaki?.toString() || "",
+                jumlahPerempuan: jadwal.jumlahPerempuan?.toString() || "",
+            });
+        }
+    }, [jadwalData, form]);
+
+    const updateMutation = useMutation({
+        mutationFn: ({ id, data }) => jadwalIbadahService.update(id, data),
         onSuccess: () => {
-            showToast({ title: "Berhasil", description: "Jadwal ibadah berhasil ditambahkan", color: "success" });
-            router.push("/employee/jadwal-ibadah");
+            showToast({ title: "Berhasil", description: "Jadwal ibadah berhasil diperbarui", color: "success" });
+            router.push(`/employee/jadwal-ibadah/${id}`);
         },
         onError: (error) => {
             showToast({ title: "Gagal", description: error.message, color: "danger" });
@@ -101,16 +143,18 @@ export default function CreateJadwalIbadahEmployee() {
     const handleSubmit = form.handleSubmit((data) => {
         const submitData = {
             ...data,
-            jumlahLaki: null,
-            jumlahPerempuan: null,
             targetPeserta: data.targetPeserta ? parseInt(data.targetPeserta) : null,
+            jumlahLaki: data.jumlahLaki ? parseInt(data.jumlahLaki) : null,
+            jumlahPerempuan: data.jumlahPerempuan ? parseInt(data.jumlahPerempuan) : null,
         };
-        createMutation.mutate(submitData);
+        updateMutation.mutate({ id, data: submitData });
     });
 
     const options = optionsData?.data || {};
+    const jadwal = jadwalData?.data;
 
-    if (isOptionsLoading) return <div className="p-8 text-center">Loading options...</div>;
+    if (isLoadingJadwal || isOptionsLoading) return <div className="p-8 text-center">Loading...</div>;
+    if (!jadwal) return <div className="p-8 text-center text-red-500">Jadwal tidak ditemukan</div>;
 
     const renderStepContent = () => {
         switch (currentStep) {
@@ -118,10 +162,10 @@ export default function CreateJadwalIbadahEmployee() {
                 return (
                     <StepContent>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <AutoCompleteInput required label="Jenis Ibadah *" name="idJenisIbadah" options={options.jenisIbadah || []} placeholder="Pilih jenis ibadah..." />
-                            <AutoCompleteInput required label="Kategori Jadwal *" name="idKategori" options={options.kategoriJadwal || []} placeholder="Pilih kategori..." />
-                            <AutoCompleteInput required label="Pemimpin Ibadah *" name="idPemimpin" options={options.pemimpin || []} placeholder="Pilih pemimpin..." />
-                            <TextInput label="Judul Ibadah *" name="judul" placeholder="Masukkan judul ibadah" />
+                            <AutoCompleteInput required label="Jenis Ibadah *" name="idJenisIbadah" options={options.jenisIbadah || []} />
+                            <AutoCompleteInput required label="Kategori Jadwal *" name="idKategori" options={options.kategoriJadwal || []} />
+                            <AutoCompleteInput required label="Pemimpin Ibadah *" name="idPemimpin" options={options.pemimpin || []} />
+                            <TextInput label="Judul Ibadah *" name="judul" />
                         </div>
                     </StepContent>
                 );
@@ -158,7 +202,17 @@ export default function CreateJadwalIbadahEmployee() {
                         <div className="space-y-6">
                             <NumberInput label="Target Peserta" min={0} name="targetPeserta" />
                             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <p className="text-sm text-blue-700">Data jumlah peserta aktual diisi setelah ibadah selesai.</p>
+                                <h3 className="font-medium text-blue-900 mb-2">📊 Jumlah Peserta Aktual</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <NumberInput label="Jumlah Laki-laki" min={0} name="jumlahLaki" />
+                                    <NumberInput label="Jumlah Perempuan" min={0} name="jumlahPerempuan" />
+                                </div>
+                                <div className="mt-4 p-3 bg-white border border-blue-200 rounded-lg">
+                                    <span className="font-medium text-blue-900">Total Peserta:</span>
+                                    <span className="text-xl font-bold text-blue-600 ml-2">
+                                        {(parseInt(form.watch("jumlahLaki")) || 0) + (parseInt(form.watch("jumlahPerempuan")) || 0)} orang
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </StepContent>
@@ -169,15 +223,15 @@ export default function CreateJadwalIbadahEmployee() {
 
     return (
         <>
-            <PageTitle title="Tambah Jadwal Ibadah" />
+            <PageTitle title={`Edit: ${jadwal?.judul}`} />
             <div className="space-y-6 p-4">
-                <PageHeader subtitle="Buat jadwal ibadah baru" title="Tambah Jadwal Ibadah" onBack={() => router.push("/employee/jadwal-ibadah")} />
+                <PageHeader subtitle="Perbarui informasi jadwal" title="Edit Jadwal Ibadah" onBack={() => router.push("/employee/jadwal-ibadah")} />
                 <Card className="p-6">
                     <FormProvider {...form}>
                         <form onSubmit={handleSubmit}>
                             <Stepper currentStep={currentStep} steps={steps} onStepClick={setCurrentStep} />
                             {renderStepContent()}
-                            <StepperNavigation canGoNext={true} currentStep={currentStep} isLoading={createMutation.isLoading} totalSteps={steps.length} onNext={handleNext} onPrevious={handlePrevious} onSubmit={handleSubmit} />
+                            <StepperNavigation canGoNext={true} currentStep={currentStep} isLoading={updateMutation.isLoading} totalSteps={steps.length} onNext={handleNext} onPrevious={handlePrevious} onSubmit={handleSubmit} nextButtonText="Lanjut" submitButtonText="Perbarui Jadwal" />
                         </form>
                     </FormProvider>
                 </Card>

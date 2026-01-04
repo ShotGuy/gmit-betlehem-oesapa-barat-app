@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import "leaflet/dist/leaflet.css";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock } from "lucide-react"; // Fixed import
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -29,7 +29,7 @@ const steps = [
     { id: 4, title: "Target & Rencana", description: "Target peserta dan informasi tambahan" },
 ];
 
-export default function CreateJadwalIbadahEmployee() {
+export default function CreateJadwalIbadahAdmin() {
     const router = useRouter();
     const [currentStep, setCurrentStep] = useState(1);
 
@@ -57,7 +57,7 @@ export default function CreateJadwalIbadahEmployee() {
         },
     });
 
-    const { data: optionsData, isLoading: isOptionsLoading } = useQuery({
+    const { data: optionsData, isLoading: isOptionsLoading, error: optionsError } = useQuery({
         queryKey: ["jadwal-ibadah-options"],
         queryFn: () => jadwalIbadahService.getOptions(),
     });
@@ -66,7 +66,7 @@ export default function CreateJadwalIbadahEmployee() {
         mutationFn: jadwalIbadahService.create,
         onSuccess: () => {
             showToast({ title: "Berhasil", description: "Jadwal ibadah berhasil ditambahkan", color: "success" });
-            router.push("/employee/jadwal-ibadah");
+            router.push("/admin/jadwal-ibadah");
         },
         onError: (error) => {
             showToast({ title: "Gagal", description: error.message, color: "danger" });
@@ -135,8 +135,8 @@ export default function CreateJadwalIbadahEmployee() {
                                 <TimeInput label="Waktu Selesai" leftIcon={<Clock className="h-4 w-4" />} name="waktuSelesai" />
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <AutoCompleteInput label="Keluarga" name="idKeluarga" options={options.keluarga || []} />
-                                <AutoCompleteInput label="Rayon" name="idRayon" options={options.rayon || []} />
+                                <AutoCompleteInput label="Keluarga (Ibadah Keluarga)" name="idKeluarga" options={options.keluarga || []} placeholder="Pilih keluarga..." />
+                                <AutoCompleteInput label="Rayon (Ibadah Rayon)" name="idRayon" options={options.rayon || []} placeholder="Pilih rayon..." />
                             </div>
                             <LocationMapPicker />
                         </div>
@@ -169,9 +169,9 @@ export default function CreateJadwalIbadahEmployee() {
 
     return (
         <>
-            <PageTitle title="Tambah Jadwal Ibadah" />
+            <PageTitle description="Buat jadwal ibadah baru" title="Tambah Jadwal Ibadah" />
             <div className="space-y-6 p-4">
-                <PageHeader subtitle="Buat jadwal ibadah baru" title="Tambah Jadwal Ibadah" onBack={() => router.push("/employee/jadwal-ibadah")} />
+                <PageHeader subtitle="Buat jadwal ibadah baru" title="Tambah Jadwal Ibadah" onBack={() => router.push("/admin/jadwal-ibadah")} />
                 <Card className="p-6">
                     <FormProvider {...form}>
                         <form onSubmit={handleSubmit}>

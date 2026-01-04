@@ -23,10 +23,59 @@ import { Card, CardContent } from "@/components/ui/Card";
 import jadwalIbadahService from "@/services/jadwalIbadahService";
 import { showToast } from "@/utils/showToast";
 
-// Note: PageHeader component here matches the UI library one, or we can inline if needed.
-// Using inline simple header for consistency with Admin page if PageHeader is different.
-// Actually, standard PageHeader is better.
+// Page Header
+function PageHeader({ title, description, breadcrumb, onAdd, onStats }) {
+    return (
+        <div className="bg-white border-b border-gray-200">
+            <div className="max-w-7xl mx-auto px-6 py-6">
+                {/* Breadcrumb */}
+                {breadcrumb && (
+                    <nav aria-label="Breadcrumb" className="flex mb-4">
+                        <ol className="inline-flex items-center space-x-1 md:space-x-3">
+                            {breadcrumb.map((item, index) => (
+                                <li key={index} className="inline-flex items-center">
+                                    {index > 0 && (
+                                        <span className="mx-2 text-gray-400">/</span>
+                                    )}
+                                    {item.href ? (
+                                        <a className="text-sm font-medium text-gray-700 hover:text-blue-600" href={item.href}>
+                                            {item.label}
+                                        </a>
+                                    ) : (
+                                        <span className="text-sm font-medium text-gray-500">{item.label}</span>
+                                    )}
+                                </li>
+                            ))}
+                        </ol>
+                    </nav>
+                )}
 
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                        <h1 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate font-display">
+                            {title}
+                        </h1>
+                        {description && (
+                            <p className="mt-1 text-sm text-gray-500">{description}</p>
+                        )}
+                    </div>
+                    <div className="flex space-x-3">
+                        <Button variant="outline" onClick={onStats}>
+                            <BarChart2 className="w-4 h-4 mr-2" />
+                            Statistik
+                        </Button>
+                        <Button onClick={onAdd}>
+                            <Plus className="w-4 h-4 mr-2" />
+                            Tambah Jadwal
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// Skeleton
 function TableSkeleton() {
     return (
         <>
@@ -44,7 +93,7 @@ function TableSkeleton() {
     );
 }
 
-export default function EmployeeJadwalIbadahPage() {
+export default function AdminJadwalIbadahPage() {
     const router = useRouter();
     const queryClient = useQueryClient();
     const [pagination, setPagination] = useState({ page: 1, limit: 10 });
@@ -87,6 +136,7 @@ export default function EmployeeJadwalIbadahPage() {
         try { return time.substring(0, 5); } catch { return time; }
     };
 
+    // Actions Configuration
     const getActions = (item) => [
         {
             icon: ClipboardList,
@@ -98,13 +148,13 @@ export default function EmployeeJadwalIbadahPage() {
         {
             icon: Eye,
             label: "Detail",
-            onClick: (i) => router.push(`/employee/jadwal-ibadah/${i.id}`),
+            onClick: (i) => router.push(`/admin/jadwal-ibadah/${i.id}`),
             variant: "outline",
         },
         {
             icon: Edit,
             label: "Edit",
-            onClick: (i) => router.push(`/employee/jadwal-ibadah/${i.id}/edit`),
+            onClick: (i) => router.push(`/admin/jadwal-ibadah/${i.id}/edit`),
             variant: "outline",
         },
         {
@@ -121,28 +171,13 @@ export default function EmployeeJadwalIbadahPage() {
 
     return (
         <div className="bg-gray-50 min-h-screen">
-            <div className="bg-white border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-6 py-6">
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                        <div className="flex-1 min-w-0">
-                            <h1 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate font-display">
-                                Jadwal Ibadah
-                            </h1>
-                            <p className="mt-1 text-sm text-gray-500">Kelola jadwal pelayanan dan ibadah.</p>
-                        </div>
-                        <div className="flex space-x-3">
-                            <Button variant="outline" onClick={() => router.push("/employee/jadwal-ibadah/statistik")}>
-                                <BarChart2 className="w-4 h-4 mr-2" />
-                                Statistik
-                            </Button>
-                            <Button onClick={() => router.push("/employee/jadwal-ibadah/create")}>
-                                <Plus className="w-4 h-4 mr-2" />
-                                Tambah Jadwal
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <PageHeader
+                breadcrumb={[{ label: "Admin", href: "/admin/dashboard" }, { label: "Jadwal Ibadah" }]}
+                title="Manajemen Jadwal Ibadah"
+                description="Kelola jadwal pelayanan, ibadah raya, dan kegiatan kategorial."
+                onAdd={() => router.push("/admin/jadwal-ibadah/create")}
+                onStats={() => router.push("/admin/jadwal-ibadah/statistik")}
+            />
 
             <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
                 <Card>
@@ -208,6 +243,7 @@ export default function EmployeeJadwalIbadahPage() {
                                                     </div>
                                                 </td>
                                                 <td className="p-4">
+                                                    {/* Quick Stats Preview */}
                                                     {(item.jumlahLaki || 0) + (item.jumlahPerempuan || 0) > 0 ? (
                                                         <div className="text-sm">
                                                             <span className="font-bold text-gray-900">{(item.jumlahLaki || 0) + (item.jumlahPerempuan || 0)}</span>
@@ -236,6 +272,7 @@ export default function EmployeeJadwalIbadahPage() {
                             </table>
                         </div>
 
+                        {/* Pagination Controls... (Simplifying for brevity, can copy full logic if needed) */}
                         {!isLoading && paginationInfo.total > 0 && (
                             <div className="p-4 border-t border-gray-100 flex items-center justify-between">
                                 <p className="text-sm text-gray-500">Total: {paginationInfo.total}</p>
@@ -249,6 +286,7 @@ export default function EmployeeJadwalIbadahPage() {
                 </Card>
             </div>
 
+            {/* Attendance Modal */}
             <AttendanceModal
                 isOpen={isAttendanceModalOpen}
                 onClose={() => setIsAttendanceModalOpen(false)}

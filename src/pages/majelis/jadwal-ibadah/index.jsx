@@ -1,4 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { id as idLocale } from "date-fns/locale";
 import {
   Calendar,
   Clock,
@@ -6,21 +8,18 @@ import {
   Eye,
   MapPin,
   Plus,
-  Trash2,
-  Users,
   Search,
-  Filter,
+  Trash2,
+  Users
 } from "lucide-react";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
-import { format } from "date-fns";
-import { id as idLocale } from "date-fns/locale";
 
-import { showToast } from "@/utils/showToast";
-import jadwalIbadahService from "@/services/jadwalIbadahService";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import ButtonActions from "@/components/ui/ButtonActions";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import jadwalIbadahService from "@/services/jadwalIbadahService";
+import { showToast } from "@/utils/showToast";
 
 // Page Header Component
 function PageHeader({ title, description, breadcrumb, onAdd }) {
@@ -471,6 +470,12 @@ export default function JadwalIbadahPage() {
           )}
         </CardContent>
       </Card>
+      {/* Attendance Modal */}
+      <AttendanceModal
+        isOpen={isAttendanceModalOpen}
+        onClose={() => setIsAttendanceModalOpen(false)}
+        jadwal={selectedJadwal}
+      />
     </div>
   );
 }

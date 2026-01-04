@@ -125,7 +125,7 @@ async function handleGet(req, res) {
 async function handlePatch(req, res) {
   try {
     // Check authentication
-    const authResult = await requireAuth(req, res, ['ADMIN', 'MAJELIS']);
+    const authResult = await requireAuth(req, res, ['ADMIN', 'MAJELIS', 'EMPLOYEE']);
 
     if (authResult.error) {
       return res
@@ -161,8 +161,17 @@ async function handlePatch(req, res) {
     }
 
     // Check access rights for editing
-    const canEdit = (() => {
+    const canEdit = await (async () => {
       if (user.role === 'ADMIN') return true;
+
+      // Employee check
+      if (user.role === 'EMPLOYEE') {
+        const pegawaiCheck = await prisma.pegawai.findUnique({
+          where: { id: user.idPegawai },
+          select: { canManageJadwal: true }
+        });
+        return pegawaiCheck?.canManageJadwal === true;
+      }
 
       if (user.role === 'MAJELIS' && user.majelis) {
         // Majelis can edit jadwal in their rayon

@@ -116,6 +116,7 @@ export const getRoleConfig = (role, user = null) => {
                         href: "group-pelayanan-ibadah",
                         icon: Heart,
                         children: [
+                            { label: "Jadwal Ibadah", href: "/admin/jadwal-ibadah", icon: Calendar },
                             { label: "Pengumuman", href: "/admin/pengumuman", icon: Megaphone },
                             // Sakramen Group
                             { label: "Baptis", href: "/admin/baptis", icon: Baby },
